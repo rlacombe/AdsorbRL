@@ -102,6 +102,32 @@ def draw_ego_graph(G, node):
     nx.draw_networkx_nodes(ego_g, pos=pos, nodelist=[node], **options)
     plt.show()
 
+
+def draw_2hop_graph(G, central_node):
+
+    # Make a graph of the single central node
+    ego_graph_0hop = nx.ego_graph(G, central_node, radius=0)
+
+    # Compute the 1-hop ego graph (neighborhood) around the central node
+    ego_graph_1hop = nx.ego_graph(G, central_node, radius=1)
+
+    # Compute the 2-hop ego graph (neighborhood) around the central node
+    ego_graph_2hop = nx.ego_graph(G, central_node, radius=2)
+    
+    # Setup the graph
+    _, ax = plt.subplots(figsize=(16, 8))
+    pos = nx.spring_layout(ego_graph_2hop, seed=1)  # Seed layout for reproducibility
+
+    # Draw the graphs
+    nx.draw(ego_graph_2hop, pos=pos, node_color="cornflowerblue", edge_color="lightgray", font_color="navy",\
+            font_weight="normal", font_size=7, node_size=30, with_labels=True, width=0.05, ax=ax)
+    nx.draw(ego_graph_1hop, pos=pos, node_color="palegreen", edge_color="lightgray", font_color="forestgreen",\
+            font_weight="normal", font_size=7, node_size=30, with_labels=True, width=0.05, ax=ax)
+    nx.draw(ego_graph_0hop, pos=pos, node_color="coral", edge_color="lightgray", font_color="orangered",\
+            font_weight="normal", font_size=7, node_size=250, with_labels=True, width=0.05, ax=ax)
+    plt.show()
+
+
 elements_list = [
     "Ag", "Al", "As", "Au", "B", "Bi", "C", "Ca", "Cd", "Cl", "Co", "Cr", "Cs",
     "Cu", "Fe", "Ga", "Ge", "H", "Hf", "Hg", "In", "Ir", "K", "Mn", "Mo", "N",
@@ -119,6 +145,8 @@ G = load_graph(SARS, elements_list)
 print ("\nEccentricity of example elements:")
 ecc = nx.eccentricity(G, ["CSi", "Ag", "C", "Si", "AgZr"])
 print(f"Eccentricities: {ecc}\n")
+
+draw_2hop_graph(G, "CSi")
 
 print ("Neighbors of SiC:")
 nei_1 = list(nx.neighbors(G, "CSi"))
@@ -145,5 +173,3 @@ avg_ecc = 0
 for n in G.nodes: avg_ecc += nx.eccentricity(G, n)
 avg_ecc /= len(G.nodes)
 print(f"Average eccentricity: {avg_ecc}")
-
-draw_ego_graph(G, "CSi")
