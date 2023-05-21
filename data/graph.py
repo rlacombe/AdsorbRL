@@ -90,5 +90,11 @@ SARS = load_transitions('SARS.pkl')
 print("Creating graph...")
 G = load_graph(SARS, elements_list)
 
+print ("Computing eccentricity of elements...")
+ecc = nx.eccentricity(G, ["CSi", "Ag", "C", "Si", "AgZr"])
+print(f"Eccentricities: {ecc}")
+
 print("Computing diameter...")
-print(f"Diameter: {nx.diameter(G)}")
+diam = nx.diameter(G)
+print(f"Diameter: {diam}")
+
