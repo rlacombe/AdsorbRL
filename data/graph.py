@@ -1,7 +1,8 @@
 import pickle
-import numpy as np
-import networkx as nx
+import numpy
 from tqdm import tqdm 
+import networkx as nx
+import matplotlib.pyplot as plt
 
 def load_transitions(filename='SARS.pkl'):
     """
@@ -48,13 +49,13 @@ def load_graph(dataset, elements_list):
         nx.DiGraph: A NetworkX directed graph representing the state transitions.
     """
 
-    G = nx.DiGraph()
+    G = nx.Graph()
     progress_bar = tqdm(total=len(dataset), desc="Creating graph")
     
     for transition in dataset:
         
         # Retrieve allowed transition
-        s, a, r, s_prime = transition
+        s, _, r, s_prime = transition
 
         # Transform into strings for node representation
         s, s_prime = onehot_to_str(s, elements_list), onehot_to_str(s_prime, elements_list)
@@ -75,6 +76,31 @@ def load_graph(dataset, elements_list):
 
     progress_bar.close()
     return G
+
+
+def draw_graph(G):
+    print("Computing graph layout...\n")
+    pos=nx.spring_layout(G)
+    plt.figure(figsize=(8, 6))
+
+    print("Plotting graph...\n")
+    nx.draw_networkx(G, pos=pos, with_labels=True, node_color='lightblue', node_size=5, font_size=12, font_weight='bold')
+    plt.show()
+
+
+def draw_ego_graph(G, node):
+    ego_g = nx.ego_graph(G, node)
+    plt.figure(figsize=(8, 6))
+    fig, ax = plt.subplots()
+
+    # Draw graph
+    pos = nx.spring_layout(ego_g, seed=1)  # Seed layout for reproducibility
+    nx.draw(ego_g, pos=pos, node_color="lightblue", edge_color="lightgray", font_color="darkblue", font_weight="normal", node_size=50, with_labels=True, ax=ax)
+
+    # Draw ego as large and red
+    options = {"node_size": 500, "node_color": "lightblue"}
+    nx.draw_networkx_nodes(ego_g, pos=pos, nodelist=[node], **options)
+    plt.show()
 
 elements_list = [
     "Ag", "Al", "As", "Au", "B", "Bi", "C", "Ca", "Cd", "Cl", "Co", "Cr", "Cs",
@@ -119,3 +145,5 @@ avg_ecc = 0
 for n in G.nodes: avg_ecc += nx.eccentricity(G, n)
 avg_ecc /= len(G.nodes)
 print(f"Average eccentricity: {avg_ecc}")
+
+draw_ego_graph(G, "CSi")
