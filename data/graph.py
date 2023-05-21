@@ -98,10 +98,12 @@ print ("Neighbors of SiC:")
 nei_1 = list(nx.neighbors(G, "CSi"))
 print(f"# of neighbors: {len(nei_1)}")
 nei_2 = []
-for n in nei_1: nei_2 = list(set(nei_2).union(list(nx.neighbors(G, n))))
+for n in nei_1: nei_2 = list(set(nei_2).union(set(list(nx.neighbors(G, n)))))
+nei_2 = list(set(nei_2) - set(nei_1))
 print(f"# of 2nd-degree neighbors: {len(nei_2)}")
 nei_3 = []
 for n in nei_2: nei_3 = list(set(nei_3).union(list(nx.neighbors(G, n))))
+nei_3 = list(set(nei_3) - set(nei_1).union(set(nei_2)))
 print(f"# of 3rd-degree neighbors: {len(nei_3)}\n")
 
 print("Computing diameter (max eccentricity)...")
