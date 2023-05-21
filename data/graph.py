@@ -84,17 +84,36 @@ elements_list = [
     "Y", "Zn", "Zr"
 ]
 
-print("Loading pickle file...")
+print("Loading pickle file...\n")
 SARS = load_transitions('SARS.pkl')
 
-print("Creating graph...")
+print("Creating graph...\n")
 G = load_graph(SARS, elements_list)
 
-print ("Computing eccentricity of elements...")
+print ("\nEccentricity of example elements:")
 ecc = nx.eccentricity(G, ["CSi", "Ag", "C", "Si", "AgZr"])
-print(f"Eccentricities: {ecc}")
+print(f"Eccentricities: {ecc}\n")
 
-print("Computing diameter...")
+print ("Neighbors of SiC:")
+nei_1 = list(nx.neighbors(G, "CSi"))
+print(f"# of neighbors: {len(nei_1)}")
+nei_2 = []
+for n in nei_1: nei_2 = list(set(nei_2).union(list(nx.neighbors(G, n))))
+print(f"# of 2nd-degree neighbors: {len(nei_2)}")
+nei_3 = []
+for n in nei_2: nei_3 = list(set(nei_3).union(list(nx.neighbors(G, n))))
+print(f"# of 3rd-degree neighbors: {len(nei_3)}\n")
+
+print("Computing diameter (max eccentricity)...")
 diam = nx.diameter(G)
-print(f"Diameter: {diam}")
+print(f"Diameter: {diam}\n")
 
+print("Computing radius (min eccentricity)...")
+rad = nx.radius(G)
+print(f"Radius: {rad}\n")
+
+print("Computing average eccentricity...")
+avg_ecc = 0
+for n in G.nodes: avg_ecc += nx.eccentricity(G, n)
+avg_ecc /= len(G.nodes)
+print(f"Average eccentricity: {avg_ecc}")
