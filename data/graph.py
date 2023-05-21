@@ -128,6 +128,30 @@ def draw_2hop_graph(G, central_node):
     plt.show()
 
 
+def draw_3hop_graph(G, central_node):
+
+    ego_graph_0hop = nx.ego_graph(G, central_node, radius=0)
+    ego_graph_1hop = nx.ego_graph(G, central_node, radius=1)
+    ego_graph_2hop = nx.ego_graph(G, central_node, radius=2)
+    ego_graph_3hop = nx.ego_graph(G, central_node, radius=3)    
+
+    # Setup the graph
+    _, ax = plt.subplots(figsize=(16, 8))
+    pos = nx.spring_layout(ego_graph_3hop, seed=1)  # Seed layout for reproducibility
+
+    # Draw the graphs
+    nx.draw(ego_graph_3hop, pos=pos, node_color="lightskyblue", edge_color="lightgray", font_color="dodgerblue",\
+            font_weight="normal", font_size=7, node_size=30, with_labels=True, width=0.05, ax=ax)
+    nx.draw(ego_graph_2hop, pos=pos, node_color="cornflowerblue", edge_color="lightgray", font_color="navy",\
+            font_weight="normal", font_size=7, node_size=30, with_labels=True, width=0.05, ax=ax)
+    nx.draw(ego_graph_1hop, pos=pos, node_color="palegreen", edge_color="lightgray", font_color="limegreen",\
+            font_weight="normal", font_size=7, node_size=30, with_labels=True, width=0.05, ax=ax)
+    nx.draw(ego_graph_0hop, pos=pos, node_color="orangered", edge_color="lightgray", font_color="seashell",\
+            font_weight="bold", font_size=7, node_size=250, with_labels=True, width=0.05, ax=ax)
+    plt.show()
+
+
+
 elements_list = [
     "Ag", "Al", "As", "Au", "B", "Bi", "C", "Ca", "Cd", "Cl", "Co", "Cr", "Cs",
     "Cu", "Fe", "Ga", "Ge", "H", "Hf", "Hg", "In", "Ir", "K", "Mn", "Mo", "N",
@@ -146,7 +170,7 @@ print ("\nEccentricity of example elements:")
 ecc = nx.eccentricity(G, ["CSi", "Ag", "C", "Si", "AgZr"])
 print(f"Eccentricities: {ecc}\n")
 
-draw_2hop_graph(G, "CSi")
+draw_3hop_graph(G, "CSi")
 
 print ("Neighbors of SiC:")
 nei_1 = list(nx.neighbors(G, "CSi"))
