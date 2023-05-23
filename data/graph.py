@@ -56,10 +56,56 @@ def load_graph(dataset, elements_list):
         
         # Retrieve allowed transition
         s, _, r, s_prime = transition
+        if sum(s) == 3: continue
+        if sum(s_prime) == 3: continue
 
         # Transform into strings for node representation
         s, s_prime = onehot_to_str(s, elements_list), onehot_to_str(s_prime, elements_list)
+
+        # Add the source state s as a node in the graph if it doesn't exist yet
+        if s not in G:
+            G.add_node(s)
     
+        # Add the target state s' as a node in the graph if it doesn't exist yet
+        if s_prime not in G:
+            G.add_node(s_prime)
+    
+        # Add an edge from s to s' with the action a and reward r
+        G.add_edge(s, s_prime, reward=r)
+
+        # Update progress bar
+        progress_bar.update(1)
+
+    progress_bar.close()
+    return G
+
+def load_binary_graph(dataset, elements_list):
+    """
+    Creates a NetworkX directed graph representing state transitions from the given dataset.
+
+    Args:
+        dataset (list): A list of transitions, where each transition is a tuple containing the
+                        current state, action, reward, and next state.
+        elements_list (list): A list of element symbols corresponding to the one-hot encoded
+                              representation of the states in the dataset.
+
+    Returns:
+        nx.DiGraph: A NetworkX directed graph representing the state transitions.
+    """
+
+    G = nx.Graph()
+    progress_bar = tqdm(total=len(dataset), desc="Creating graph")
+    
+    for transition in dataset:
+        
+        # Retrieve allowed transition excluding ternary mixtures
+        s, _, r, s_prime = transition
+        if sum(s) == 3: continue 
+        if sum(s_prime) == 3: continue
+
+        # Transform into strings for node representation
+        s, s_prime = onehot_to_str(s, elements_list), onehot_to_str(s_prime, elements_list)
+
         # Add the source state s as a node in the graph if it doesn't exist yet
         if s not in G:
             G.add_node(s)
@@ -166,11 +212,9 @@ SARS = load_transitions('SARS.pkl')
 print("Creating graph...\n")
 G = load_graph(SARS, elements_list)
 
-print ("\nEccentricity of example elements:")
-ecc = nx.eccentricity(G, ["CSi", "Ag", "C", "Si", "AgZr"])
-print(f"Eccentricities: {ecc}\n")
-
-draw_3hop_graph(G, "CSi")
+print(f"Nodes: {len(G.nodes)}")
+print(f"Edges: {len(G.edges)}")
+print(f"Average degree:{sum([d for (_,d) in G.degree])/len(G.nodes) }\n")
 
 print ("Neighbors of SiC:")
 nei_1 = list(nx.neighbors(G, "CSi"))
@@ -183,6 +227,10 @@ nei_3 = []
 for n in nei_2: nei_3 = list(set(nei_3).union(list(nx.neighbors(G, n))))
 nei_3 = list(set(nei_3) - set(nei_1).union(set(nei_2)))
 print(f"# of 3rd-degree neighbors: {len(nei_3)}\n")
+
+print ("Eccentricity of example elements:")
+ecc = nx.eccentricity(G, ["CSi", "Ag", "C", "Si", "AgZr"])
+print(f"Eccentricities: {ecc}\n")
 
 print("Computing diameter (max eccentricity)...")
 diam = nx.diameter(G)
@@ -197,3 +245,6 @@ avg_ecc = 0
 for n in G.nodes: avg_ecc += nx.eccentricity(G, n)
 avg_ecc /= len(G.nodes)
 print(f"Average eccentricity: {avg_ecc}")
+
+print ("\nDrawing 3-hop neighborhood graph...")
+draw_3hop_graph(G, "CSi")
