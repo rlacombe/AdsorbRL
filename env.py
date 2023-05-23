@@ -22,7 +22,7 @@ class CatEnv(dm_env.Environment):
     for _, _, reward, state in transitions_raw:
       # Numpy arrays aren't hashable, so convert to tuples.
       # Maximize rewards, but want min energy --> flip sign.
-      self.states[tuple(np.array(state, dtype=np.float32))] = float(-reward)
+      self.states[tuple(np.array(state, dtype=np.float32))] = float(-reward / 10)
       
       if np.sum(state) == 1:
         self.initial_states.add(tuple(state))
@@ -85,13 +85,13 @@ class CatEnv(dm_env.Environment):
 
     if invalid:
       self._reset_next_step = True
-      return dm_env.TimeStep(dm_env.StepType.LAST, -1.0, 1.0, self.curr_state)
+      return dm_env.TimeStep(dm_env.StepType.LAST, -0.01, 1.0, self.curr_state)
       
     # Check if the action is valid but we don't have data there.
 
     if not tuple(self.curr_state) in self.states:
       self._reset_next_step = True
-      return dm_env.TimeStep(dm_env.StepType.LAST, -1.0, 1.0, self.curr_state)
+      return dm_env.TimeStep(dm_env.StepType.LAST, -0.01, 1.0, self.curr_state)
     else:
       # We're arriving at a valid state.
       self.episode_len += 1
@@ -111,4 +111,3 @@ class CatEnv(dm_env.Environment):
         minimum=0,
         maximum=1,
     )
-

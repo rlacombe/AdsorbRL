@@ -18,18 +18,19 @@ def main(_):
 
   network = snt.Sequential([
       snt.Flatten(),
-      snt.nets.MLP([256, environment_spec.actions.num_values])
+      snt.nets.MLP([128, 128, environment_spec.actions.num_values])
   ])
 
   agent = dqn.DQN(
     environment_spec=environment_spec,
     network=network,
-    target_update_period=50,
+    target_update_period=2000,
     samples_per_insert=8.,
     n_step=1,
     checkpoint=False,
-    epsilon=0.1,
-    learning_rate=1e-4,
+    epsilon=0.2,
+    learning_rate=1e-3,
+    discount=0.8,
   )
 
   loop = acme.EnvironmentLoop(environment, agent)
