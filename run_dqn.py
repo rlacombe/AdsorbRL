@@ -16,7 +16,7 @@ from env import CatEnv
 
 def main(_):
   environment = wrappers.SinglePrecisionWrapper(CatEnv())
-  environment = GoalConditioned(environment)
+  environment = GoalConditionedWrapper(environment)
   environment_spec = specs.make_environment_spec(environment)
   replay_buffer = datasets.HindsightExperienceReplayBuffer()
 

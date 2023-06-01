@@ -1,4 +1,8 @@
-class GoalConditionedWrapper:
+import copy
+
+from acme.wrappers import base
+
+class GoalConditionedWrapper(base.EnvironmentWrapper):
     def __init__(self, environment):
         self.environment = environment
 
