@@ -255,14 +255,12 @@ elements_list = [
 print("Loading pickle file...\n")
 SARS = load_transitions('SARS.pkl')
 
-G = load_unary_graph(SARS, elements_list)
+#G = load_unary_graph(SARS, elements_list)
            
-for n in G.nodes:
-        edges_from_node = [edge for edge in G.edges() if n in edge] 
-        v, u = edges_from_node[-1]
-        print(f"{v}: {G.edges[v, u]['reward']}") 
-
-exit()
+#for n in G.nodes:
+#        edges_from_node = [edge for edge in G.edges() if n in edge] 
+#        v, u = edges_from_node[-1]
+#        print(f"{v}: {G.edges[v, u]['reward']}") 
 
 print("Creating graph...\n")
 G = load_graph(SARS, elements_list)
