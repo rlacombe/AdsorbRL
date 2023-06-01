@@ -30,7 +30,6 @@ def main(_):
   agent = dqn.DQN(
     environment_spec=environment_spec,
     network=network,
-    replay_buffer=replay_buffer,
     target_update_period=50,
     samples_per_insert=8.,
     n_step=1,
@@ -40,27 +39,10 @@ def main(_):
   )
 
   loop = acme.EnvironmentLoop(environment, agent)
-  num_episodes=  20000
-  for _ in range(num_episodes):
-    replay_buffer.clear()
+  loop.run(num_episodes=20000)
 
-    loop.reset()
-
-    while not loop.done:
-        action = loop.agent.select_action(loop.environment.current_time_step)
-        loop.advance(action)
-
-        replay_buffer.add(loop.last_transition)
-
-        her_transitions = replay_buffer.generate_hindsight_transitions(
-            transition=loop.last_transition,  # Original transition
-            num_additional_goals=4,  # Number of additional goals to create
-        )
-
-        for transition in her_transitions:
-            replay_buffer.add(transition)
-
-    loop.agent.update()
+  # Reset the environment
+  environment.reset()
 
 
   state = np.zeros((1,55))
