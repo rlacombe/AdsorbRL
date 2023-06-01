@@ -1,6 +1,6 @@
 from absl import app
 from absl import flags
-from goal_conditioned_wrapper import GoalConditionedWrapper
+from goal_conditioned_wrapper import GoalConditionedWrapper, HERWrapper
 from hindsight_experience_replay_buffer import HindsightExperienceReplayBuffer
 
 import acme
@@ -17,7 +17,7 @@ from env import CatEnv
 
 def main(_):
   environment = wrappers.SinglePrecisionWrapper(CatEnv())
-  environment = GoalConditionedWrapper(environment)
+  environment = HERWrapper(environment)
   environment_spec = specs.make_environment_spec(environment)
   buffer_size=1e6
   replay_buffer = HindsightExperienceReplayBuffer(buffer_size)
