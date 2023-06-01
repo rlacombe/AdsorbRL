@@ -257,11 +257,10 @@ SARS = load_transitions('SARS.pkl')
 
 G = load_unary_graph(SARS, elements_list)
            
-for e in G.edges:
-    u, v = e
-    print(f"{u} -> {v}: {G.edges[u, v]['reward']}") 
-
-print(G.nodes['C'])
+for n in G.nodes:
+        edges_from_node = [edge for edge in G.edges() if n in edge] 
+        v, u = edges_from_node[-1]
+        print(f"{v}: {G.edges[v, u]['reward']}") 
 
 exit()
 
