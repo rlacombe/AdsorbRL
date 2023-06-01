@@ -2,6 +2,7 @@ from absl import app
 from absl import flags
 
 import acme
+from acme import datasets
 from acme import specs
 from acme import wrappers
 from acme.agents.tf import dqn
@@ -14,7 +15,9 @@ from env import CatEnv
 
 def main(_):
   environment = wrappers.SinglePrecisionWrapper(CatEnv())
+  environment = wrappers.GoalConditioned(environment)
   environment_spec = specs.make_environment_spec(environment)
+  replay_buffer = datasets.HindsightExperienceReplayBuffer()
 
   network = snt.Sequential([
       snt.Flatten(),
@@ -24,6 +27,7 @@ def main(_):
   agent = dqn.DQN(
     environment_spec=environment_spec,
     network=network,
+    replay_buffer=replay_buffer,
     target_update_period=50,
     samples_per_insert=8.,
     n_step=1,
@@ -33,7 +37,27 @@ def main(_):
   )
 
   loop = acme.EnvironmentLoop(environment, agent)
-  loop.run(num_episodes=20000)  # pytype: disable=attribute-error
+  num_episodes=  20000
+  for _ in range(num_episodes):
+    replay_buffer.clear()
+
+    loop.reset()
+
+    while not loop.done:
+        action = loop.agent.select_action(loop.environment.current_time_step)
+        loop.advance(action)
+
+        replay_buffer.add(loop.last_transition)
+
+        her_transitions = replay_buffer.generate_hindsight_transitions(
+            transition=loop.last_transition,  # Original transition
+            num_additional_goals=4,  # Number of additional goals to create
+        )
+
+        for transition in her_transitions:
+            replay_buffer.add(transition)
+
+    loop.agent.update()
 
 
   state = np.zeros((1,55))
@@ -48,7 +72,7 @@ def main(_):
   print('Starting with Mn; should see higher weight on Pd and Pt (indices 32 & 33):')
   print(q_vals)
 
-  
+
 
 if __name__ == '__main__':
   app.run(main)
