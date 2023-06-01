@@ -1,5 +1,6 @@
 from absl import app
 from absl import flags
+from goal_conditioned_wrapper import GoalConditionedWrapper
 
 import acme
 from acme import datasets
@@ -15,7 +16,7 @@ from env import CatEnv
 
 def main(_):
   environment = wrappers.SinglePrecisionWrapper(CatEnv())
-  environment = wrappers.GoalConditioned(environment)
+  environment = GoalConditioned(environment)
   environment_spec = specs.make_environment_spec(environment)
   replay_buffer = datasets.HindsightExperienceReplayBuffer()
 
