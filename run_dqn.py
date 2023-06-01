@@ -19,7 +19,8 @@ def main(_):
   environment = wrappers.SinglePrecisionWrapper(CatEnv())
   environment = GoalConditionedWrapper(environment)
   environment_spec = specs.make_environment_spec(environment)
-  replay_buffer = HindsightExperienceReplayBuffer()
+  buffer_size=1e6
+  replay_buffer = HindsightExperienceReplayBuffer(buffer_size)
 
   network = snt.Sequential([
       snt.Flatten(),
