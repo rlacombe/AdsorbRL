@@ -1,6 +1,7 @@
 from absl import app
 from absl import flags
 from goal_conditioned_wrapper import GoalConditionedWrapper
+from hindsight_experience_replay_buffer import HindsightExperienceReplayBuffer
 
 import acme
 from acme import datasets
@@ -18,7 +19,7 @@ def main(_):
   environment = wrappers.SinglePrecisionWrapper(CatEnv())
   environment = GoalConditionedWrapper(environment)
   environment_spec = specs.make_environment_spec(environment)
-  replay_buffer = datasets.HindsightExperienceReplayBuffer()
+  replay_buffer = HindsightExperienceReplayBuffer()
 
   network = snt.Sequential([
       snt.Flatten(),
