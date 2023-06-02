@@ -29,12 +29,19 @@ class ReplayBuffer:
 class EpisodeObserver:
     def __init__(self):
         self.transitions = []
+        self.first_observation = None
+        self.first_timestep = None
 
-    def observe(self, timestep: acme.types.TimeStep):
+    def observe_first(self, environment, timestep):
+        self.first_observation = timestep.observation
+        self.first_timestep = timestep
+
+    def observe(self, environment, timestep, action):
         if timestep.first():
             self.transitions.clear()
+            self.first_observation = timestep.observation
+            self.first_timestep = timestep
         self.transitions.append(timestep)
-
 
 def main(_):
     environment = wrappers.SinglePrecisionWrapper(CatEnv())
