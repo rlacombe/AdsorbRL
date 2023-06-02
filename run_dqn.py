@@ -33,7 +33,7 @@ def main(_):
   )
 
   loop = acme.EnvironmentLoop(environment, agent)
-  loop.run(num_episodes=100000)  # pytype: disable=attribute-error
+  loop.run(num_episodes=20000)  # pytype: disable=attribute-error
 
 
   state = np.zeros((1,86))

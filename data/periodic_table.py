@@ -19,7 +19,7 @@ class Element:
         del self.data[key]
 
     def one_hot_encode(self, MAXZ): # Encode an element into a 1-hot state vector
-        encoded = np.zeros(MAXZ)
+        encoded = np.zeros(MAXZ, dtype=np.float32)
         encoded[self.data['Z']-1] = 1.0 # NOTE: Z = index + 1 (since Z starts at 1)
         return encoded
 
@@ -63,7 +63,7 @@ class PeriodicTable:
     def z_to_state(self, atomic_number):
         matching_states = [state for state, element in self.table if element['z'] == atomic_number]
         if matching_states:
-            return matching_states[0] # find state matching Z
+            return np.array(matching_states[0], dtype=np.float32) # find state matching Z
         else: return None
 
     def state_to_z(self, state):

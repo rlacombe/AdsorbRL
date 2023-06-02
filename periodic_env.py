@@ -6,7 +6,7 @@ from data.periodic_table import PeriodicTable
 
 class PeriodicTableEnv(dm_env.Environment):
   
-  def __init__(self, max_episode_len=10, data_filename='data/periodic_table.csv'):
+  def __init__(self, max_episode_len=20, data_filename='data/periodic_table.csv'):
 
     # Init variables
     self.periodic_table = PeriodicTable(data_filename)
@@ -26,7 +26,7 @@ class PeriodicTableEnv(dm_env.Environment):
       e = self.periodic_table[z]
 
       # arrays aren't hashable, convert to tuple
-      self.states.add(tuple(e.one_hot_encode(self.MAXZ))) 
+      self.states.add(tuple(np.array(e.one_hot_encode(self.MAXZ), dtype=np.float32))) 
 
     # Fill in initial states
     self.initial_states = self.states.copy()
@@ -41,8 +41,8 @@ class PeriodicTableEnv(dm_env.Environment):
   def reset(self) -> dm_env.TimeStep:
     self._reset_next_step = False
     rand_start_idx = np.random.choice(len(self.initial_states))+1
-    self.curr_state = self.periodic_table[rand_start_idx]['state']
-    self.reward = self.periodic_table[rand_start_idx]['E_ads_OH2']
+    self.curr_state = np.array(self.periodic_table[rand_start_idx]['state'], dtype=np.float32)
+    self.reward = self.EUNK if self.periodic_table[rand_start_idx]['E_ads_OH2'] == None else self.periodic_table[rand_start_idx]['E_ads_OH2']
     self.episode_len = 0
     return dm_env.TimeStep(dm_env.StepType.FIRST,
             self.reward,
@@ -54,7 +54,8 @@ class PeriodicTableEnv(dm_env.Environment):
       return self.reset()
 
     curr_z = self.periodic_table.state_to_z(self.curr_state)
-
+    self.curr_state = np.array(self.curr_state, dtype=np.float32)
+    
     action = np.zeros(self.action_dim, dtype=np.float32)
     if int_action < self.action_dim:
       action[int_action] = 1.0
@@ -97,7 +98,7 @@ class PeriodicTableEnv(dm_env.Environment):
     # If action is invalid, end the episode and give a negative reward
     if invalid:
       self._reset_next_step = True
-      return dm_env.TimeStep(dm_env.StepType.LAST, -1.0, 1.0, self.curr_state)
+      return dm_env.TimeStep(dm_env.StepType.LAST, -1.0, float(1.0), self.curr_state)
       
     # Check if the action is valid but we don't have data there then compute energy
     if self.periodic_table[curr_z]['E_ads_OH2'] == None:
@@ -108,18 +109,18 @@ class PeriodicTableEnv(dm_env.Environment):
         next_E = self.EUNK
     else: next_E = self.periodic_table[next_z]['E_ads_OH2']
     
-    reward = curr_E - next_E
+    reward = float(curr_E - next_E)
 
     # Move to next state
-    self.next_state = self.periodic_table[next_z].one_hot_encode(self.MAXZ)
+    self.next_state = np.array(self.periodic_table[next_z]['state'], dtype=np.float32)
 
     if not tuple(self.next_state) in self.states:
       self._reset_next_step = True
-      return dm_env.TimeStep(dm_env.StepType.LAST, -1.0, 1.0, self.current_state)
+      return dm_env.TimeStep(dm_env.StepType.LAST, -1.0, float(1.0), self.curr_state)
     else:
       # We're arriving at a valid state.
       self.episode_len += 1
-      return dm_env.TimeStep(dm_env.StepType.MID, reward, 1.0, self.next_state)
+      return dm_env.TimeStep(dm_env.StepType.MID, reward,float(1.0), self.next_state)
 
   def action_spec(self):
     # Represent the action as a 4-dim one-hot vector:
