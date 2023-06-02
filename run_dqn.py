@@ -1,6 +1,4 @@
 from absl import app
-from absl import flags
-
 import acme
 from acme import core
 from acme import specs
@@ -28,11 +26,11 @@ class ReplayBuffer:
         return [self.buffer[index] for index in indices]
 
 
-class EpisodeObserver(acme.utils.observers.EnvObserver):
+class EpisodeObserver:
     def __init__(self):
         self.transitions = []
 
-    def observe_timestep(self, timestep: dm_env.TimeStep):
+    def observe(self, timestep: acme.types.TimeStep):
         if timestep.first():
             self.transitions.clear()
         self.transitions.append(timestep)
