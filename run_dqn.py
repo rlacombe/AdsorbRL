@@ -51,7 +51,7 @@ def main(_):
     )
 
     loop = acme.EnvironmentLoop(environment, agent)
-
+    num_episodes=20000
     for _ in range(num_episodes):
         # Collect transitions
         loop.run_episode()
