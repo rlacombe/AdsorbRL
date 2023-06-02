@@ -19,7 +19,8 @@ import sonnet as snt
 import tensorflow as tf
 import trfl
 from acme.agents.tf import dqn
-
+import dm_env
+from acme import types
 
 class DQNHER(dqn.DQN):
   """DQN-HER agent.
