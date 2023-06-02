@@ -26,6 +26,7 @@ def main(_):
     network=network,
     target_update_period=50,
     samples_per_insert=8.,
+    priority_exponent=.9,
     n_step=1,
     checkpoint=False,
     epsilon=0.1,
