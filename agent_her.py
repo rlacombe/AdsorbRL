@@ -86,6 +86,7 @@ class DQNHER(dqn.DQN):
     # order to allow the Agent interface to handle it.
     self._alternative_goals = []
 
+    print("INIT")
 
     super().__init__(
       environment_spec =environment_spec,
@@ -108,7 +109,7 @@ class DQNHER(dqn.DQN):
       policy_network=policy_network,
       max_gradient_norm=max_gradient_norm)
 
-def _generate_alternative_goal(self, next_timestep: dm_env.TimeStep):
+  def _generate_alternative_goal(self, next_timestep: dm_env.TimeStep):
     # Extract the final achieved goal from the next_timestep
     final_achieved_goal = next_timestep.observation['achieved_goal']
 
@@ -118,8 +119,13 @@ def _generate_alternative_goal(self, next_timestep: dm_env.TimeStep):
     return alternative_goal
 
 
-def observe(self, action: types.NestedArray, next_timestep: dm_env.TimeStep):
+  def observe(self, action: types.NestedArray, next_timestep: dm_env.TimeStep):
+      print("observe0a")
+
+    super().observe()
+
     self._num_observations += 1
+    print("observe0")
 
     # Store original observation and action
     original_observation = next_timestep.observation
@@ -127,6 +133,8 @@ def observe(self, action: types.NestedArray, next_timestep: dm_env.TimeStep):
 
     # Perform HER
     for _ in range(self._num_observations):
+        print("observe1")
+
         # Generate alternative goal from final achieved goal
         alternative_goal = self._generate_alternative_goal(next_timestep)
         self._alternative_goals.append(alternative_goal)
@@ -151,26 +159,33 @@ def observe(self, action: types.NestedArray, next_timestep: dm_env.TimeStep):
     # Pass the original observation and action to the actor for storage
     self._actor.observe(action, next_timestep)
 
-def update(self):
+
+  def update(self):
   # if self._iterator:
-  super().update()
+    print("HERE0")
+    super().update()
+    print("HERE1")
 
   # Perform HER for the stored experiences
-  for alternative_goal in self._alternative_goals:
-    # Set the alternative goal as the new desired goal
-    for replay_table in self._replay_tables:
-      replay_table.py_client.mutate_priorities(
-          table=table.name,
-          updates=[
-              reverb.ReplayTable.Diff(
-                  info=transition.info,
-                  data={
+    for alternative_goal in self._alternative_goals:
+        print("HERE2")
+
+        # Set the alternative goal as the new desired goal
+        for replay_table in self._replay_tables:
+            print("HERE3")
+
+            replay_table.py_client.mutate_priorities(
+                table=table.name,
+                updates=[
+                    reverb.ReplayTable.Diff(
+                    info=transition.info,
+                    data={
                       'desired_goal': alternative_goal
-                  }
-              ) for transition in replay_table.py_client.sample(
-                  table=table.name,
-                  num_samples=self._batch_size_upper_bounds[table_index],
-                  remove_from_table=False
-              )
-          ]
-      )
+                      }
+                    ) for transition in replay_table.py_client.sample(
+                        table=table.name,
+                        num_samples=self._batch_size_upper_bounds[table_index],
+                        remove_from_table=False
+                    )
+                ]
+            )
