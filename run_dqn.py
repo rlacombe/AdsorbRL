@@ -7,6 +7,7 @@ from acme.agents.tf import dqn
 import numpy as np
 import sonnet as snt
 import tensorflow as tf
+from acme.types import TimeStep, Transition
 
 from env import CatEnv
 
@@ -41,7 +42,16 @@ class EpisodeObserver:
             self.transitions.clear()
             self.first_observation = timestep.observation
             self.first_timestep = timestep
-        self.transitions.append(timestep)
+
+        next_observation = timestep.observation
+        transition = Transition(
+            observation=self.first_observation,
+            action=action,
+            reward=timestep.reward,
+            discount=timestep.discount,
+            next_observation=next_observation
+        )
+        self.transitions.append(transition)
 
 def main(_):
     environment = wrappers.SinglePrecisionWrapper(CatEnv())
@@ -109,19 +119,16 @@ def main(_):
 def apply_her(transitions):
     augmented_transitions = []
     for transition in transitions:
-        achieved_goal = transition.next_state  # Assuming the next_state represents the achieved goal
-        desired_goal = transition.next_state_desired_goal  # Assuming you have access to the desired goal
+        achieved_goal = transition.next_observation
+        desired_goal = transition.observation
 
-        # Create a new transition with the achieved goal
-        augmented_transition = acme.types.Transition(
+        augmented_transition = Transition(
             observation=transition.observation,
             action=transition.action,
             reward=transition.reward,
-            next_observation=transition.next_observation,
-            next_action=transition.next_action,
             discount=transition.discount,
-            next_state=achieved_goal,
-            next_state_desired_goal=desired_goal
+            next_observation=transition.next_observation,
+            extras=transition.extras
         )
 
         augmented_transitions.append(transition)
