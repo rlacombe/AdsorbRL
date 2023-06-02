@@ -107,36 +107,48 @@ class DQNHER(dqn.DQN):
       policy_network=policy_network,
       max_gradient_norm=max_gradient_norm)
 
+def _generate_alternative_goal(self, next_timestep: dm_env.TimeStep):
+    # Extract the final achieved goal from the next_timestep
+    final_achieved_goal = next_timestep.observation['achieved_goal']
+
+    # Generate an alternative goal based on the final achieved goal
+    alternative_goal = final_achieved_goal
+
+    return alternative_goal
+
+
 def observe(self, action: types.NestedArray, next_timestep: dm_env.TimeStep):
-  self._num_observations += 1
+    self._num_observations += 1
 
-  # Store original observation and action
-  original_observation = next_timestep.observation
-  original_action = action
+    # Store original observation and action
+    original_observation = next_timestep.observation
+    original_action = action
 
-  # Perform HER
-  for alternative_goal in self._alternative_goals:
-    # Set the alternative goal as the new desired goal
-    next_timestep.observation['desired_goal'] = alternative_goal
+    # Perform HER
+    for _ in range(self._num_observations):
+        # Generate alternative goal from final achieved goal
+        alternative_goal = self._generate_alternative_goal(next_timestep)
+        self._alternative_goals.append(alternative_goal)
 
-    # Store the modified observation and action
-    modified_observation = next_timestep.observation
-    modified_action = action
+        # Store the modified observation and action
+        modified_observation = copy.deepcopy(next_timestep.observation)
+        modified_observation['desired_goal'] = alternative_goal
+        modified_action = copy.deepcopy(action)
 
-    # Pass the modified observation and action to the actor for storage
-    self._actor.observe(modified_action, dm_env.TimeStep(
-        step_type=next_timestep.step_type,
-        reward=next_timestep.reward,
-        discount=next_timestep.discount,
-        observation=modified_observation,
-    ))
+        # Pass the modified observation and action to the actor for storage
+        self._actor.observe(modified_action, dm_env.TimeStep(
+            step_type=next_timestep.step_type,
+            reward=next_timestep.reward,
+            discount=next_timestep.discount,
+            observation=modified_observation,
+        ))
 
-  # Restore the original observation and action
-  next_timestep.observation = original_observation
-  action = original_action
+    # Restore the original observation and action
+    next_timestep.observation = original_observation
+    action = original_action
 
-  # Pass the original observation and action to the actor for storage
-  self._actor.observe(action, next_timestep)
+    # Pass the original observation and action to the actor for storage
+    self._actor.observe(action, next_timestep)
 
 def update(self):
   # if self._iterator:
