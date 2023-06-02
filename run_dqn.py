@@ -45,7 +45,6 @@ def main(_):
         target_update_period=50,
         samples_per_insert=8.,
         n_step=1,
-        replay_buffer=replay_buffer,
         checkpoint=False,
         epsilon=0.1,
         learning_rate=1e-4,
@@ -63,8 +62,12 @@ def main(_):
         for transition in augmented_transitions:
             replay_buffer.add(transition)
 
-        # Update the network using samples from the replay buffer
-        agent.learn()
+        # Sample transitions from the replay buffer
+        batch_size = 64
+        samples = replay_buffer.sample(batch_size)
+
+        # Update the network using samples
+        agent.update(samples)
 
     state = np.zeros((1,55))
     state[0, 6] = 1.0
