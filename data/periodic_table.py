@@ -80,7 +80,7 @@ class PeriodicTable:
         if element['Z'] > 1:  # if not  Hydrogen
             return element['Z']-1
         else:
-            return None  # No previous element
+            return 86  # No previous element
 
     def element_above(self, z):
         element = self.table[z]
@@ -120,7 +120,7 @@ class PeriodicTable:
                 return 2
             else: return None
         
-        return None  # No element above for line 1 
+        return 86  # No element above for line 1 
 
     def element_below(self, z):
         element = self.table[z]

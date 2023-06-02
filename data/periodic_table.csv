@@ -38,7 +38,7 @@ AtomicNumber,Symbol,Name,AtomicMass,CPKHexColor,ElectronConfiguration,Electroneg
 37,Rb,Rubidium,85.468,702EB0,[Kr]5s1,0.82,303,4.177,0.468,+1,Solid,312.46,961,1.53,Alkali metal,1861,-0.39
 38,Sr,Strontium,87.62,00FF00,[Kr]5s2,0.95,249,5.695,,+2,Solid,1050,1655,2.64,Alkaline earth metal,1790,-2.639
 39,Y,Yttrium,88.90584,94FFFF,[Kr]5s2 4d1,1.22,219,6.217,0.307,+3,Solid,1795,3618,4.47,Transition metal,1794,-3.31
-40,Zr,Zirconium,91.22,94E0E0,[Kr]5s2 4d2,1.33,186,6.634,0.426,+4,Solid,2128,4682,6.52,Transition metal,1789
+40,Zr,Zirconium,91.22,94E0E0,[Kr]5s2 4d2,1.33,186,6.634,0.426,+4,Solid,2128,4682,6.52,Transition metal,1789, -0.678
 41,Nb,Niobium,92.90637,73C2C9,[Kr]5s1 4d4,1.6,207,6.759,0.893,"+5, +3",Solid,2750,5017,8.57,Transition metal,1801,-3.25
 42,Mo,Molybdenum,95.95,54B5B5,[Kr]5s1 4d5,2.16,209,7.092,0.746,+6,Solid,2896,4912,10.2,Transition metal,1778,-2.103
 43,Tc,Technetium,96.90636,3B9E9E,[Kr]5s2 4d5,1.9,209,7.28,0.55,"+7, +6, +4",Solid,2430,4538,11,Transition metal,1937,-1.277
