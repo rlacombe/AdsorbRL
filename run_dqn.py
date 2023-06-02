@@ -1,4 +1,6 @@
 from absl import app
+from agent_her import DQNHER
+
 import acme
 from acme import core
 from acme import specs
@@ -53,68 +55,45 @@ class EpisodeObserver:
         )
         self.transitions.append(transition)
 
+    def get_metrics(self):
+        return {}
+
 def main(_):
-    environment = wrappers.SinglePrecisionWrapper(CatEnv())
-    environment_spec = specs.make_environment_spec(environment)
+  environment = wrappers.SinglePrecisionWrapper(CatEnv())
+  environment_spec = specs.make_environment_spec(environment)
 
-    network = snt.Sequential([
-        snt.Flatten(),
-        snt.nets.MLP([256, environment_spec.actions.num_values])
-    ])
+  network = snt.Sequential([
+      snt.Flatten(),
+      snt.nets.MLP([256, environment_spec.actions.num_values])
+  ])
 
-    buffer_size = 1000000
-    replay_buffer = ReplayBuffer(buffer_size)
+  agent = dqn.DQNHER(
+    environment_spec=environment_spec,
+    network=network,
+    target_update_period=50,
+    samples_per_insert=8.,
+    n_step=1,
+    checkpoint=False,
+    epsilon=0.1,
+    learning_rate=1e-4,
+  )
 
-    agent = dqn.DQN(
-        environment_spec=environment_spec,
-        network=network,
-        target_update_period=50,
-        samples_per_insert=8.,
-        n_step=1,
-        checkpoint=False,
-        epsilon=0.1,
-        learning_rate=1e-4,
-    )
-
-    observer = EpisodeObserver()
-    loop = acme.EnvironmentLoop(
-        environment=environment,
-        actor=agent,
-        observers=[observer]
-    )
-
-    num_episodes = 20000  # Define the number of episodes
-    for _ in range(num_episodes):
-        # Collect transitions
-        loop.run_episode()
-
-        # Access episode transitions
-        transitions = observer.transitions
-
-        # Apply HER and add augmented transitions to the replay buffer
-        augmented_transitions = apply_her(transitions)
-        for transition in augmented_transitions:
-            replay_buffer.add(transition)
-
-        # Sample transitions from the replay buffer
-        batch_size = 64
-        samples = replay_buffer.sample(batch_size)
-
-        # Update the network using samples
-        agent.update(samples)
+  loop = acme.EnvironmentLoop(environment, agent)
+  loop.run(num_episodes=20000)  # pytype: disable=attribute-error
 
 
-    state = np.zeros((1,55))
-    state[0, 6] = 1.0
-    q_vals = agent._learner._network(tf.constant(state, dtype=tf.float32))
-    print('Starting with C; should see high weight on Si (index 42):')
-    print(q_vals)
+  state = np.zeros((1,55))
+  state[0, 6] = 1.0
+  q_vals = agent._learner._network(tf.constant(state, dtype=tf.float32))
+  print('Starting with C; should see high weight on Si (index 42):')
+  print(q_vals)
 
-    state = np.zeros((1,55))
-    state[0, 23] = 1.0
-    q_vals = agent._learner._network(tf.constant(state, dtype=tf.float32))
-    print('Starting with Mn; should see higher weight on Pd and Pt (indices 32 & 33):')
-    print(q_vals)
+  state = np.zeros((1,55))
+  state[0, 23] = 1.0
+  q_vals = agent._learner._network(tf.constant(state, dtype=tf.float32))
+  print('Starting with Mn; should see higher weight on Pd and Pt (indices 32 & 33):')
+  print(q_vals)
+
 
 def apply_her(transitions):
     augmented_transitions = []
