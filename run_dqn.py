@@ -9,11 +9,11 @@ import numpy as np
 import sonnet as snt
 import tensorflow as tf
 
-from env import CatEnv
+from periodic_env import PeriodicTableEnv
 
 
 def main(_):
-  environment = wrappers.SinglePrecisionWrapper(CatEnv())
+  environment = wrappers.SinglePrecisionWrapper(PeriodicTableEnv())
   environment_spec = specs.make_environment_spec(environment)
 
   network = snt.Sequential([
@@ -33,21 +33,14 @@ def main(_):
   )
 
   loop = acme.EnvironmentLoop(environment, agent)
-  loop.run(num_episodes=20000)  # pytype: disable=attribute-error
+  loop.run(num_episodes=100000)  # pytype: disable=attribute-error
 
 
-  state = np.zeros((1,55))
-  state[0, 6] = 1.0
+  state = np.zeros((1,86))
+  state[0, 14] = 1.0
   q_vals = agent._learner._network(tf.constant(state, dtype=tf.float32))
-  print('Starting with C; should see high weight on Si (index 42):')
+  print('Starting with Si; should see high weight on going up to C (index 3 ↑):')
   print(q_vals)
-
-  state = np.zeros((1,55))
-  state[0, 23] = 1.0
-  q_vals = agent._learner._network(tf.constant(state, dtype=tf.float32))
-  print('Starting with Mn; should see higher weight on Pd and Pt (indices 32 & 33):')
-  print(q_vals)
-
   
 
 if __name__ == '__main__':

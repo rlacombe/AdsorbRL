@@ -34,9 +34,9 @@ class Element:
         
 
 class PeriodicTable:
-    def __init__(self, filename='periodic_table.csv'):
+    def __init__(self, filename='periodic_table.csv', max_z=86):
 
-        self.MAXZ = 86 # Only use elements until Radon 
+        self.MAXZ = max_z # 86: only elements up to Radon 
 
         self.table = {} # Fill up the periodic table 
         with open(filename, 'r') as csvfile:
