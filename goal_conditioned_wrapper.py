@@ -20,16 +20,39 @@ class HERWrapper(wrappers.EnvironmentWrapper):
         return self._wrapped_env.reset()
 
     def step(self, action):
-        next_observation, reward, done, info = self._wrapped_env.step(action)
+        timestep = self._wrapped_env.step(action)
+        print(timestep)
+        # Check if the step_type is LAST and access the observation field if necessary
+        next_observation = timestep.observation
 
-        # Perform HER replay
-        # Modify the reward and goal based on achieved goal
-        info['achieved_goal'] = next_observation['achieved_goal']
-        reward = self._compute_reward(next_observation['achieved_goal'], next_observation['desired_goal'], info)
+        # Compute the achieved_goal and desired_goal
+        achieved_goal = self._compute_achieved_goal(next_observation)
+        desired_goal = next_observation
 
-        return next_observation, reward, done, info
+        # Compute the reward using the achieved_goal and desired_goal
+        reward = self._compute_reward(achieved_goal, desired_goal)
 
-    def _compute_reward(self, achieved_goal, desired_goal, info):
-        # Compute the HER reward based on achieved goal and desired goal
-        # Modify this function according to your specific reward computation logic
-        return float(np.array_equal(achieved_goal, desired_goal))
+        next_timestep = dm_env.TimeStep(
+            step_type=timestep.step_type,
+            reward=timestep.reward,
+            discount=timestep.discount,
+            observation=next_observation
+        )
+
+        return next_timestep, reward
+
+    def _compute_achieved_goal(self, next_observation):
+        if isinstance(next_observation, float):
+            # Handle the case when next_observation is a float value
+            # Compute the achieved_goal using the next_observation directly
+            achieved_goal = next_observation  # Replace None with the actual computation
+        else:
+            # Handle the case when next_observation is a dictionary
+            # Modify this code to extract the relevant information from the next_observation
+            achieved_goal = next_observation  # Replace None with the actual computation
+        return achieved_goal
+
+    def _compute_reward(self, achieved_goal, desired_goal):
+            # Handle the case when next_observation is a float value
+            # Compute the reward using the achieved_goal and desired_goal directly
+        reward = self._reward_fn(achieved_goal, desired_goal)
