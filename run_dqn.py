@@ -9,54 +9,8 @@ from acme.agents.tf import dqn
 import numpy as np
 import sonnet as snt
 import tensorflow as tf
-from acme.types import TimeStep, Transition
 
 from env import CatEnv
-
-
-class ReplayBuffer:
-    def __init__(self, buffer_size):
-        self.buffer_size = buffer_size
-        self.buffer = []
-
-    def add(self, transition):
-        if len(self.buffer) >= self.buffer_size:
-            self.buffer.pop(0)
-        self.buffer.append(transition)
-
-    def sample(self, batch_size):
-        indices = np.random.randint(0, len(self.buffer), size=batch_size)
-        return [self.buffer[index] for index in indices]
-
-
-class EpisodeObserver:
-    def __init__(self):
-        self.transitions = []
-        self.first_observation = None
-        self.first_timestep = None
-
-    def observe_first(self, environment, timestep):
-        self.first_observation = timestep.observation
-        self.first_timestep = timestep
-
-    def observe(self, environment, timestep, action):
-        if timestep.first():
-            self.transitions.clear()
-            self.first_observation = timestep.observation
-            self.first_timestep = timestep
-
-        next_observation = timestep.observation
-        transition = Transition(
-            observation=self.first_observation,
-            action=action,
-            reward=timestep.reward,
-            discount=timestep.discount,
-            next_observation=next_observation
-        )
-        self.transitions.append(transition)
-
-    def get_metrics(self):
-        return {}
 
 def main(_):
   environment = wrappers.SinglePrecisionWrapper(CatEnv())
@@ -67,7 +21,7 @@ def main(_):
       snt.nets.MLP([256, environment_spec.actions.num_values])
   ])
 
-  agent = dqn.DQNHER(
+  agent = DQNHER(
     environment_spec=environment_spec,
     network=network,
     target_update_period=50,
@@ -94,26 +48,6 @@ def main(_):
   print('Starting with Mn; should see higher weight on Pd and Pt (indices 32 & 33):')
   print(q_vals)
 
-
-def apply_her(transitions):
-    augmented_transitions = []
-    for transition in transitions:
-        achieved_goal = transition.next_observation
-        desired_goal = transition.observation
-
-        augmented_transition = Transition(
-            observation=transition.observation,
-            action=transition.action,
-            reward=transition.reward,
-            discount=transition.discount,
-            next_observation=transition.next_observation,
-            extras=transition.extras
-        )
-
-        augmented_transitions.append(transition)
-        augmented_transitions.append(augmented_transition)
-
-    return augmented_transitions
 
 if __name__ == '__main__':
     app.run(main)

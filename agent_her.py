@@ -3,6 +3,7 @@
 
 import copy
 from typing import Optional
+from acme import types
 
 from acme import datasets
 from acme import specs
@@ -89,11 +90,11 @@ class DQNHER(dqn.DQN):
       environment_spec =environment_spec,
       network=network,
       batch_size=batch_size,
-      prefetch_s=prefetch_s,
+      prefetch_size=prefetch_size,
       target_update_period = target_update_period,
       samples_per_insert=samples_per_insert,
       min_replay_size=min_replay_size,
-      max_replay_siz=max_replay_size,
+      max_replay_size=max_replay_size,
       importance_sampling_exponent= importance_sampling_exponent,
       priority_exponent=priority_exponent,
       n_step=n_step,
@@ -139,7 +140,7 @@ def observe(self, action: types.NestedArray, next_timestep: dm_env.TimeStep):
 
 def update(self):
   # if self._iterator:
-    super().update()
+  super().update()
 
   # Perform HER for the stored experiences
   for alternative_goal in self._alternative_goals:
