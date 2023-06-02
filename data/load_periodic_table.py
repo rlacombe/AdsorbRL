@@ -65,7 +65,7 @@ E_ads_OH2 = {
     'V': -3.526,
     'W': -1.911,
     'Y': -3.31,
-    'Z': -6.78
+    'Zr': -6.78
 }
 
 # Path to the input and output files

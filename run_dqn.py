@@ -5,25 +5,49 @@ import acme
 from acme import specs
 from acme import wrappers
 from acme.agents.tf import dqn
+from acme.utils.loggers import tf_summary
 import numpy as np
 import sonnet as snt
 import tensorflow as tf
+import datetime
 
 from periodic_env import PeriodicTableEnv
+from explore import LinearExplorationSchedule, DQNExplorer, EpsilonGreedyEnvironmentLoop
+
+def perform_rollouts(environment, agent, num_rollouts):
+    total_E = 0.0
+
+    for _ in range(num_rollouts):
+        timestep = environment.reset()
+
+        while not timestep.last():
+            action = agent.select_action(timestep.observation)
+            timestep = environment.step(action)
+        
+        state = timestep.observation
+        z = environment.periodic_table.state_to_z(state)
+        total_E += - environment.periodic_table[z]['E_ads_OH2']
+
+    average_energy = total_E / num_rollouts
+    return average_energy
 
 
 def main(_):
+  
+  # Define environment
   environment = wrappers.SinglePrecisionWrapper(PeriodicTableEnv())
   environment_spec = specs.make_environment_spec(environment)
 
-  network = snt.Sequential([
+  # Define Q-network
+  q_network = snt.Sequential([
       snt.Flatten(),
-      snt.nets.MLP([256, environment_spec.actions.num_values])
+      snt.nets.MLP([1024, environment_spec.actions.num_values])
   ])
-
+  
+  # Define agent and epsilon-greedy exploration schedule
   agent = dqn.DQN(
     environment_spec=environment_spec,
-    network=network,
+    network=q_network,
     target_update_period=50,
     samples_per_insert=8.,
     n_step=1,
@@ -31,9 +55,31 @@ def main(_):
     epsilon=0.1,
     learning_rate=1e-4,
   )
+  
+  exploration_schedule = LinearExplorationSchedule(initial_epsilon=1.0, final_epsilon=0.05, decay_steps=400000.0)
+  explorer = DQNExplorer(agent, exploration_schedule, environment.action_dim)
 
-  loop = acme.EnvironmentLoop(environment, agent)
-  loop.run(num_episodes=50000)  # pytype: disable=attribute-error
+  # Logging
+  current_time = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
+  log_directory = f"logs/{current_time}"
+  logger = tf_summary.TFSummaryLogger(logdir = log_directory, label = 'DQN')
+  
+  # Define main loop
+  loop = EpsilonGreedyEnvironmentLoop(environment, explorer, logger=logger)
+  total_episodes = 50000
+  eval_every = 500
+
+  # Run main lop
+  for steps in range(int(total_episodes / eval_every)):
+    loop.run(num_episodes=eval_every)  # Train in environment
+    
+    # Roll out policies and evaluate last state average energy
+    avg_energy = perform_rollouts(environment, agent, 200)
+    print(f"\n\n++++++++++++++++++++++++++++++\nAverage final energy: {avg_energy}\n++++++++++++++++++++++++++++++\n\n")
+
+    # Log to TensorBoard
+    logger.write({'Average Final Energy': avg_energy})
+    logger.write({'Epsilon': explorer.exploration_schedule.get_epsilon(explorer.timestep)})
 
 
   state = np.zeros((1,86))

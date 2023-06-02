@@ -14,13 +14,13 @@ class PeriodicTableEnv(dm_env.Environment):
     self.MAXZ = len(self.periodic_table.table)
     self.MINE = -9.081 # Fe (iron)
     self.EUNK = float(0) # Set unknown energies at 0 
-    self.OUT = float(-10.0) # If going out of bounds
-    self.STEP = float(0.1) # Taking a step
+    self.OUT = float(-100.0) # If going out of bounds
+    self.STEP = float(0.0) # Taking a step
     self.STOP = float(0.0) # Terminating
-    self.GAMMA = float(1)
+    self.GAMMA = float(0.95)
 
     self.max_episode_len = max_episode_len
-    self.action_dim = 5 # → | ← | ↓ | ↑ | STOP
+    self.action_dim = 5 # → | ← | ↓ | ↑ | stay
     self.curr_state = None
     self.episode_len = 0
     self._reset_next_step = True
@@ -38,6 +38,8 @@ class PeriodicTableEnv(dm_env.Environment):
 
     # Fill in initial states
     self.initial_states = self.states.copy()
+    
+    #self.initial_states = tuple(self.periodic_table[47]['state'].copy())
     #h = self.periodic_table[1]
     #self.initial_states.add(tuple(np.array(e.one_hot_encode(self.MAXZ), dtype=np.float32)))
 
@@ -48,7 +50,7 @@ class PeriodicTableEnv(dm_env.Environment):
     self._reset_next_step = False
     rand_start_idx = np.random.choice(len(self.initial_states))+1
     self.curr_state = np.array(self.periodic_table[rand_start_idx]['state'], dtype=np.float32)
-    self.reward = self.EUNK if self.periodic_table[rand_start_idx]['E_ads_OH2'] == None else self.periodic_table[rand_start_idx]['E_ads_OH2']
+    self.reward = self.periodic_table[rand_start_idx]['E_ads_OH2']
     self.episode_len = 0
     return dm_env.TimeStep(dm_env.StepType.FIRST,
             self.reward,
@@ -73,7 +75,7 @@ class PeriodicTableEnv(dm_env.Environment):
       # This is our "end" action; it's just a 0 vector no-op.
     #  pass
 
-    # Take action #  ← | → | ↑ | ↓ | STOP
+    # Take action #  ← | → | ↑ | ↓ | stay
     next_z = None
 
     if int_action == 0: # ← 
@@ -88,7 +90,10 @@ class PeriodicTableEnv(dm_env.Environment):
     if int_action == 3: # ↓
         next_z = self.periodic_table.element_below(curr_z)
 
-    if int_action == 4 or self.episode_len == self.max_episode_len: # STOP
+    if int_action == 4: # don't move
+        next_z = curr_z
+    
+    if self.episode_len == self.max_episode_len: # STOP
       self._reset_next_step = True
 
       # We must be at an existing state; fetch reward.
@@ -98,7 +103,7 @@ class PeriodicTableEnv(dm_env.Environment):
             self.episode_len, 
             ' | Final state: ', self.periodic_table[curr_z]['symbol'], 
             ' | Energy: ', self.periodic_table[curr_z]['E_ads_OH2'])
-      return dm_env.TimeStep(dm_env.StepType.LAST, -float(curr_E), self.GAMMA, self.curr_state)
+      return dm_env.TimeStep(dm_env.StepType.LAST, self.STOP - curr_E, self.GAMMA, self.curr_state)
 
     # If action is invalid, end the episode and give a negative reward
     if next_z == None:
@@ -113,7 +118,7 @@ class PeriodicTableEnv(dm_env.Environment):
 
     # If we don't have data there then compute energy
     next_E = self.periodic_table[next_z]['E_ads_OH2']
-    reward = 0.0 #(curr_E - next_E) 
+    reward = self.STEP - next_E 
     #reward = self.STEP * np.sqrt(abs(curr_z - next_z)) + (1/self.STEP)*(curr_E - next_E) 
 
     # We're arriving at a valid state.
@@ -122,8 +127,8 @@ class PeriodicTableEnv(dm_env.Environment):
     return dm_env.TimeStep(dm_env.StepType.MID, reward, self.GAMMA, self.curr_state)
 
   def action_spec(self):
-    # Represent the action as a 4-dim one-hot vector:
-    #  ← | → | ↑ | ↓ | STOP
+    # Represent the action as a 5-dim one-hot vector:
+    #  ← | → | ↑ | ↓ | stay
     return specs.DiscreteArray(
         self.action_dim, 
         dtype=np.int32, 
