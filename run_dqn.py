@@ -2,6 +2,7 @@ from absl import app
 from absl import flags
 
 import acme
+from acme import core
 from acme import specs
 from acme import wrappers
 from acme.agents.tf import dqn
@@ -27,6 +28,16 @@ class ReplayBuffer:
         return [self.buffer[index] for index in indices]
 
 
+class EpisodeObserver(acme.utils.observers.EnvObserver):
+    def __init__(self):
+        self.transitions = []
+
+    def observe_timestep(self, timestep: dm_env.TimeStep):
+        if timestep.first():
+            self.transitions.clear()
+        self.transitions.append(timestep)
+
+
 def main(_):
     environment = wrappers.SinglePrecisionWrapper(CatEnv())
     environment_spec = specs.make_environment_spec(environment)
@@ -50,14 +61,22 @@ def main(_):
         learning_rate=1e-4,
     )
 
-    loop = acme.EnvironmentLoop(environment, agent)
-    num_episodes=20000
+    observer = EpisodeObserver()
+    loop = acme.EnvironmentLoop(
+        environment=environment,
+        actor=agent,
+        observers=[observer]
+    )
+
+    num_episodes = 20000  # Define the number of episodes
     for _ in range(num_episodes):
         # Collect transitions
         loop.run_episode()
 
+        # Access episode transitions
+        transitions = observer.transitions
+
         # Apply HER and add augmented transitions to the replay buffer
-        transitions = loop._last_episode.transitions
         augmented_transitions = apply_her(transitions)
         for transition in augmented_transitions:
             replay_buffer.add(transition)
@@ -68,6 +87,7 @@ def main(_):
 
         # Update the network using samples
         agent.update(samples)
+
 
     state = np.zeros((1,55))
     state[0, 6] = 1.0
@@ -103,7 +123,6 @@ def apply_her(transitions):
         augmented_transitions.append(augmented_transition)
 
     return augmented_transitions
-
 
 if __name__ == '__main__':
     app.run(main)
