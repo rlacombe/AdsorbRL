@@ -12,6 +12,21 @@ import tensorflow as tf
 from env import CatEnv
 
 
+class ReplayBuffer:
+    def __init__(self, buffer_size):
+        self.buffer_size = buffer_size
+        self.buffer = []
+
+    def add(self, transition):
+        if len(self.buffer) >= self.buffer_size:
+            self.buffer.pop(0)
+        self.buffer.append(transition)
+
+    def sample(self, batch_size):
+        indices = np.random.randint(0, len(self.buffer), size=batch_size)
+        return [self.buffer[index] for index in indices]
+
+
 def main(_):
     environment = wrappers.SinglePrecisionWrapper(CatEnv())
     environment_spec = specs.make_environment_spec(environment)
@@ -21,13 +36,8 @@ def main(_):
         snt.nets.MLP([256, environment_spec.actions.num_values])
     ])
 
-    # Create a replay buffer to store transitions
-    replay_buffer = acme.datasets.reverb.make_reverb_prioritized_nstep_replay_buffer(
-        environment_spec=environment_spec,
-        n_step=1,
-        batch_size=64,
-        max_replay_size=1000000,
-    )
+    buffer_size = 1000000
+    replay_buffer = ReplayBuffer(buffer_size)
 
     agent = dqn.DQN(
         environment_spec=environment_spec,
@@ -56,8 +66,17 @@ def main(_):
         # Update the network using samples from the replay buffer
         agent.learn()
 
-    # ...
+    state = np.zeros((1,55))
+    state[0, 6] = 1.0
+    q_vals = agent._learner._network(tf.constant(state, dtype=tf.float32))
+    print('Starting with C; should see high weight on Si (index 42):')
+    print(q_vals)
 
+    state = np.zeros((1,55))
+    state[0, 23] = 1.0
+    q_vals = agent._learner._network(tf.constant(state, dtype=tf.float32))
+    print('Starting with Mn; should see higher weight on Pd and Pt (indices 32 & 33):')
+    print(q_vals)
 
 def apply_her(transitions):
     augmented_transitions = []
