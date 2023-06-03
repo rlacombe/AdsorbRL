@@ -71,7 +71,8 @@ class PeriodicTable:
 
     def next_element(self, z):
         element = self.table[z]
-        if not element or element['Z'] >= self.MAXZ: return None  # if Radon (last element)
+        if not element or element['Z'] > self.MAXZ: return None  # if Radon (last element)
+        if element['Z'] == self.MAXZ: return 86 # Radon
         return element['Z']+1
     
     def previous_element(self, z):
@@ -80,7 +81,7 @@ class PeriodicTable:
         if element['Z'] > 1:  # if not  Hydrogen
             return element['Z']-1
         else:
-            return 86  # No previous element
+            return 1  # No previous element
 
     def element_above(self, z):
         element = self.table[z]
@@ -89,7 +90,7 @@ class PeriodicTable:
         # Line 6: no element above for lanthanoids
         if element['n'] == 6:
             if element['Z'] >= 57 and element['Z'] <= 71:
-                return None
+                return element['Z']+15 # Move to line 6 from 'below'
             elif element['Z'] >= 72:
                 return element['Z']-32
             else:
@@ -101,8 +102,10 @@ class PeriodicTable:
 
         # Line 4: no element above for transition metals
         if element['n'] == 4:
-            if element['Z'] >= 21 and element['Z'] <= 30:
-                return None
+            if element['Z'] >= 21 and element['Z'] <= 25:
+                return 12 # move 'up' to Mg
+            if element['Z'] >= 26 and element['Z'] <= 30:
+                return 13 # move 'up' to Al
             elif element['Z'] >= 31:
                 return element['Z']-18
             else:
@@ -112,20 +115,20 @@ class PeriodicTable:
         if element['n'] == 3:
             return element['Z']-8
 
-        # Line 2: no element above except for Li and Ne
+        # Line 2: move up to H or He
         if element['n'] == 2:
-            if element['Z'] == 3:
+            if element['Z'] >= 3 and element['Z'] <= 6:
                 return 1
-            elif element['Z'] == 10:
+            elif element['Z'] >= 7 and element['Z'] <= 10:
                 return 2
-            else: return None
+            else: return z
         
-        return 86  # No element above for line 1 
+        return element['Z']  # No element above for line 1 
 
     def element_below(self, z):
         element = self.table[z]
 
-        if element['n'] > 5: return None 
+        if element['n'] > 6: return None 
         
         elif element['n'] == 5: 
             if element['Z'] <= 39: return element['Z']+18
@@ -144,6 +147,6 @@ class PeriodicTable:
         elif element['n'] == 1: 
             if element['Z'] == 1: return 3
             elif element['Z'] == 2: return 10
-            else: return None  
+            else: return z  
 
-        else: return None
+        else: return z
