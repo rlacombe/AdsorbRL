@@ -258,7 +258,7 @@ class EnvironmentLoopHer(core.Worker):
     # Record counts.
     counts = self._counter.increment(episodes=1, steps=episode_steps)
     for _ in range(episode_steps):
-      state, action, reward, next_state, step_type_new = replay_buffer.sample()
+      state, action, reward, next_state, step_type_new = self.replay_buffer.sample()
       hind_timestep = dm_env.TimeStep(step_type_new, reward, 1.0, state)
       self._actor.observe(action, next_timestep=hind_timestep)
       for observer in self._observers:
