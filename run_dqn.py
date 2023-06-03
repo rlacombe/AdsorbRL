@@ -41,14 +41,14 @@ def main(_):
   # Define Q-network
   q_network = snt.Sequential([
       snt.Flatten(),
-      snt.nets.MLP([256, environment_spec.actions.num_values])
+      snt.nets.MLP([256, environment_spec.actions.num_values], activate_final=False),
   ])
   
   # Define agent and epsilon-greedy exploration schedule
   agent = dqn.DQN(
     environment_spec=environment_spec,
     network=q_network,
-    target_update_period=50,
+    target_update_period=10,
     samples_per_insert=8.,
     n_step=1,
     checkpoint=False,
@@ -66,7 +66,7 @@ def main(_):
   
   # Define main loop
   loop = EpsilonGreedyEnvironmentLoop(environment, explorer, logger=logger)
-  total_episodes = 2000
+  total_episodes = 10000
   eval_every = 500
 
   # Run main lop
@@ -74,7 +74,7 @@ def main(_):
     loop.run(num_episodes=eval_every)  # Train in environment
     
     # Roll out policies and evaluate last state average energy
-    avg_energy = perform_rollouts(environment, agent, 250)
+    avg_energy = perform_rollouts(environment, agent, 100)
     print(f"\n\n++++++++++++++++++++++++++++++\nAverage final energy: {avg_energy}\n++++++++++++++++++++++++++++++\n\n")
 
     # Log to TensorBoard
@@ -110,6 +110,13 @@ def main(_):
   state[0, 11] = 1.0
   q_vals = agent._learner._network(tf.constant(state, dtype=tf.float32))
   print('\nFrom Mg: should see high weight on going down to Ca (index 4: ↓):')
+  print(q_vals)
+
+  q_vals = np.zeros((86,5))
+  for i in range(86):
+    state = np.zeros((1,86))
+    state[0, i] = 1.0
+    q_vals[i] = agent._learner._network(tf.constant(state, dtype=tf.float32))
   print(q_vals)
 
 
