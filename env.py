@@ -41,8 +41,8 @@ class CatEnv(dm_env.Environment):
     self.episode_len = 0
     self._reset_next_step = True
 
-  def rewardFunction(self) -> dm_env.TimeStep:
-    return self.states[tuple(self.curr_state)]
+  def rewardFunctionPrediction(self,state) -> dm_env.TimeStep:
+    return self.states[tuple(state)]
 
   def reset(self) -> dm_env.TimeStep:
     self._reset_next_step = False
