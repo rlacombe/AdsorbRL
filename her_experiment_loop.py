@@ -250,13 +250,13 @@ class EnvironmentLoopHer(core.Worker):
       np.append(episode_experience,transition)
       np.append(time_steps,timestep)
 
-    self.update_replay_buffer(
+      self.update_replay_buffer(
         self._replay_buffer,
         episode_experience,
         her_type=HERType.FINAL,
         env_reward_function= self._environment.rewardFunction,
         num_relabeled=self._num_relabeled
-     )
+        )
     # Record counts.
     counts = self._counter.increment(episodes=1, steps=episode_steps)
     for _ in range(episode_steps):
