@@ -122,6 +122,7 @@ class EnvironmentLoopHer(core.Worker):
             reward function for relabelling transitions
         num_relabeled (int): number of relabeled transition per transition
     """
+    print("here0",episode_experience)
 
     for timestep in range(len(episode_experience)):
 
