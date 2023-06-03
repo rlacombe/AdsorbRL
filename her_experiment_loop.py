@@ -28,8 +28,8 @@ import dm_env
 from dm_env import specs
 import numpy as np
 import tree
-import utils
-from utils import HERType
+import util
+from util import HERType
 
 class EnvironmentLoopHer(core.Worker):
   """A simple RL environment loop.
