@@ -11,6 +11,8 @@ import tensorflow as tf
 
 from env import CatEnv
 from her_experiment_loop import EnvironmentLoopHer
+import datetime
+from acme.utils.loggers import tf_summary
 
 
 def main(_):
@@ -32,8 +34,13 @@ def main(_):
     epsilon=0.1,
     learning_rate=1e-4,
   )
+  current_time = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
 
-  loop = EnvironmentLoopHer(environment, agent)
+  log_directory = f"logs/{current_time}"
+
+  logger = tf_summary.TFSummaryLogger(logdir = log_directory, label = 'DQN')
+
+  loop = EnvironmentLoopHer(environment, agent,logger=logger)
   loop.run(num_episodes=20000)  # pytype: disable=attribute-error
 
 

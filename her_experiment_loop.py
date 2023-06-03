@@ -23,7 +23,25 @@ from acme.utils import counting
 from acme.utils import loggers
 from acme.utils import observers as observers_lib
 from acme.utils import signals
+from acme import core
+from acme import specs
+from acme import types
 
+import operator
+import time
+from typing import Optional, Sequence
+
+from acme import core
+from acme.utils import counting
+from acme.utils import loggers
+from acme.utils import observers as observers_lib
+from acme.utils import signals
+import replay_buffer as experience_buffer
+
+import dm_env
+from dm_env import specs
+import numpy as np
+import tree
 import dm_env
 from dm_env import specs
 import numpy as np
@@ -72,7 +90,9 @@ class EnvironmentLoopHer(core.Worker):
     # Internalize agent and environment.
     self._environment = environment
     self._actor = actor
-    self._counter = counter or counting.Counter()
+    self._counter =  counting.Counter()
+    dir(counting.Counter)
+
     self._logger = logger or loggers.make_default_logger(
         label, steps_key=self._counter.get_steps_key())
     self._should_update = should_update
