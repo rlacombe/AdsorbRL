@@ -105,7 +105,7 @@ class EnvironmentLoopHer(core.Worker):
     self,
     replay_buffer,
     episode_experience,
-    her_type=HERType.NO_HINDSIGHT,
+    her_type=HERType.FINAL,
     env_reward_function=None, # pylint: disable=unused-argument
     num_relabeled=4, # pylint: disable=unused-argument
 ):
@@ -254,7 +254,7 @@ class EnvironmentLoopHer(core.Worker):
         her_type=HERType.FINAL,
         env_reward_function= self._environment.rewardFunction,
         num_relabeled=self._num_relabeled
-    )
+     )
     # Record counts.
     counts = self._counter.increment(episodes=1, steps=episode_steps)
     for _ in range(episode_steps):
