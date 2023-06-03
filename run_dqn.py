@@ -41,7 +41,7 @@ def main(_):
   # Define Q-network
   q_network = snt.Sequential([
       snt.Flatten(),
-      snt.nets.MLP([1024, environment_spec.actions.num_values])
+      snt.nets.MLP([256, environment_spec.actions.num_values])
   ])
   
   # Define agent and epsilon-greedy exploration schedule
@@ -56,7 +56,7 @@ def main(_):
     learning_rate=1e-4,
   )
   
-  exploration_schedule = LinearExplorationSchedule(initial_epsilon=1.0, final_epsilon=0.05, decay_steps=400000.0)
+  exploration_schedule = LinearExplorationSchedule(initial_epsilon=1.0, final_epsilon=0.05, decay_steps=50000.0)
   explorer = DQNExplorer(agent, exploration_schedule, environment.action_dim)
 
   # Logging
@@ -66,7 +66,7 @@ def main(_):
   
   # Define main loop
   loop = EpsilonGreedyEnvironmentLoop(environment, explorer, logger=logger)
-  total_episodes = 50000
+  total_episodes = 2000
   eval_every = 500
 
   # Run main lop
@@ -74,7 +74,7 @@ def main(_):
     loop.run(num_episodes=eval_every)  # Train in environment
     
     # Roll out policies and evaluate last state average energy
-    avg_energy = perform_rollouts(environment, agent, 200)
+    avg_energy = perform_rollouts(environment, agent, 250)
     print(f"\n\n++++++++++++++++++++++++++++++\nAverage final energy: {avg_energy}\n++++++++++++++++++++++++++++++\n\n")
 
     # Log to TensorBoard
@@ -83,34 +83,35 @@ def main(_):
 
 
   state = np.zeros((1,86))
+  state[0, 25] = 1.0
+  q_vals = agent._learner._network(tf.constant(state, dtype=tf.float32))
+  print('\nFrom Fe: should see high weight on terminating (index 0: _):')
+  print(q_vals)
+
+  state = np.zeros((1,86))
   state[0, 6] = 1.0
   q_vals = agent._learner._network(tf.constant(state, dtype=tf.float32))
-  print('\nFrom N; should see high weight on going left to C (index 0 ←):')
+  print('\nFrom N; should see high weight on going left to C (index 1: ←):')
   print(q_vals)
 
   state = np.zeros((1,86))
   state[0, 24] = 1.0
   q_vals = agent._learner._network(tf.constant(state, dtype=tf.float32))
-  print('\nFrom Mn; should see high weight on going right to Fe (index 1 →):')
+  print('\nFrom Mn; should see high weight on going right to Fe (index 2: →):')
   print(q_vals)
 
   state = np.zeros((1,86))
   state[0, 13] = 1.0
   q_vals = agent._learner._network(tf.constant(state, dtype=tf.float32))
-  print('\nFrom Si; should see high weight on going up to C (index 2 ↑):')
+  print('\nFrom Si; should see high weight on going up to C (index 3: ↑):')
   print(q_vals)
   
   state = np.zeros((1,86))
   state[0, 11] = 1.0
   q_vals = agent._learner._network(tf.constant(state, dtype=tf.float32))
-  print('\nFrom Mg: should see high weight on going down to Ca (index 3 ↓):')
+  print('\nFrom Mg: should see high weight on going down to Ca (index 4: ↓):')
   print(q_vals)
 
-  state = np.zeros((1,86))
-  state[0, 25] = 1.0
-  q_vals = agent._learner._network(tf.constant(state, dtype=tf.float32))
-  print('\nFrom Fe: should see high weight on terminating (index 4 STOP):')
-  print(q_vals)
 
   
 

@@ -6,21 +6,20 @@ from data.periodic_table import PeriodicTable
 
 class PeriodicTableEnv(dm_env.Environment):
   
-  def __init__(self, max_episode_len=20, data_filename='data/periodic_table.csv'):
+  def __init__(self, max_episode_len=10, data_filename='data/periodic_table.csv'):
 
     # Init variables
     self.periodic_table = PeriodicTable(data_filename)
 
     self.MAXZ = len(self.periodic_table.table)
-    self.MINE = -9.081 # Fe (iron)
     self.EUNK = float(0) # Set unknown energies at 0 
-    self.OUT = float(-100.0) # If going out of bounds
-    self.STEP = float(0.0) # Taking a step
+    self.OUT = float(-50.0) # If going out of bounds
+    self.STEP = float(-0.1) # Taking a step
     self.STOP = float(0.0) # Terminating
     self.GAMMA = float(0.95)
 
     self.max_episode_len = max_episode_len
-    self.action_dim = 5 # → | ← | ↓ | ↑ | stay
+    self.action_dim = 5 # _ | → | ← | ↓ | ↑  
     self.curr_state = None
     self.episode_len = 0
     self._reset_next_step = True
@@ -37,9 +36,10 @@ class PeriodicTableEnv(dm_env.Environment):
       self.states.add(tuple(np.array(e.one_hot_encode(self.MAXZ), dtype=np.float32))) 
 
     # Fill in initial states
-    self.initial_states = self.states.copy()
+    #self.initial_states = self.states.copy()
     
-    #self.initial_states = tuple(self.periodic_table[47]['state'].copy())
+    self.initial_states = set()
+    self.initial_states.add(tuple(self.periodic_table[1]['state'].copy()))
     #h = self.periodic_table[1]
     #self.initial_states.add(tuple(np.array(e.one_hot_encode(self.MAXZ), dtype=np.float32)))
 
@@ -75,23 +75,23 @@ class PeriodicTableEnv(dm_env.Environment):
       # This is our "end" action; it's just a 0 vector no-op.
     #  pass
 
-    # Take action #  ← | → | ↑ | ↓ | stay
+    # Take action # _ | → | ← | ↓ | ↑  
     next_z = None
 
-    if int_action == 0: # ← 
+    if int_action == 0: # _
+        next_z = curr_z
+
+    if int_action == 1: # ← 
         next_z = self.periodic_table.previous_element(curr_z)
 
-    if int_action == 1: # →
+    if int_action == 2: # →
         next_z = self.periodic_table.next_element(curr_z)
 
-    if int_action == 2: # ↑ 
+    if int_action == 3: # ↑ 
         next_z = self.periodic_table.element_above(curr_z)
 
-    if int_action == 3: # ↓
+    if int_action == 4: # ↓
         next_z = self.periodic_table.element_below(curr_z)
-
-    if int_action == 4: # don't move
-        next_z = curr_z
     
     if self.episode_len == self.max_episode_len: # STOP
       self._reset_next_step = True
@@ -103,13 +103,12 @@ class PeriodicTableEnv(dm_env.Environment):
             self.episode_len, 
             ' | Final state: ', self.periodic_table[curr_z]['symbol'], 
             ' | Energy: ', self.periodic_table[curr_z]['E_ads_OH2'])
-      return dm_env.TimeStep(dm_env.StepType.LAST, self.STOP - curr_E, self.GAMMA, self.curr_state)
+      return dm_env.TimeStep(dm_env.StepType.LAST, self.STOP, self.GAMMA, self.curr_state)
 
-    # If action is invalid, end the episode and give a negative reward
+    # If action is invalid, give a negative reward but stay in the same state
     if next_z == None:
-      self._reset_next_step = True
       print(f"Out of bounds from {self.periodic_table[curr_z]['symbol']}")
-      return dm_env.TimeStep(dm_env.StepType.LAST, self.OUT, self.GAMMA, self.curr_state)
+      return dm_env.TimeStep(dm_env.StepType.MID, self.OUT, self.GAMMA, self.curr_state)
       
     # Move to next state
     self.next_state = np.array(self.periodic_table[next_z].one_hot_encode(self.MAXZ), dtype=np.float32)
@@ -118,7 +117,7 @@ class PeriodicTableEnv(dm_env.Environment):
 
     # If we don't have data there then compute energy
     next_E = self.periodic_table[next_z]['E_ads_OH2']
-    reward = self.STEP - next_E 
+    reward = (self.STEP)**2 + (next_E)**2 - (curr_E)**2
     #reward = self.STEP * np.sqrt(abs(curr_z - next_z)) + (1/self.STEP)*(curr_E - next_E) 
 
     # We're arriving at a valid state.
@@ -128,7 +127,7 @@ class PeriodicTableEnv(dm_env.Environment):
 
   def action_spec(self):
     # Represent the action as a 5-dim one-hot vector:
-    #  ← | → | ↑ | ↓ | stay
+    # _ | → | ← | ↓ | ↑  
     return specs.DiscreteArray(
         self.action_dim, 
         dtype=np.int32, 
