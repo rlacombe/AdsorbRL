@@ -12,7 +12,7 @@ import tensorflow as tf
 import datetime
 
 from periodic_env import PeriodicTableEnv
-from explore import LinearExplorationSchedule, DQNExplorer, EpsilonGreedyEnvironmentLoop, QLearningAgent
+from agents import LinearExplorationSchedule, DQNExplorer, EpsilonGreedyEnvironmentLoop, QLearningAgent
 
 def perform_rollouts(environment, agent, num_rollouts):
     total_E = 0.0
@@ -40,7 +40,7 @@ def main(_):
 
   # Define agent
   agent = QLearningAgent(
-    env_specs=environment_spec, step_size=0.02, epsilon=0.2
+    env_specs=environment_spec, step_size=0.01, epsilon=0.1
   )
 
   # Logging
@@ -50,7 +50,7 @@ def main(_):
   
   # Define main loop
   loop = acme.EnvironmentLoop(environment, agent, logger=logger)
-  total_episodes = 20000
+  total_episodes = 50000
   eval_every = 1000
 
   # Run main lop
