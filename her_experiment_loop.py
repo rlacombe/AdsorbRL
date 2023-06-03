@@ -102,6 +102,7 @@ class EnvironmentLoopHer(core.Worker):
     self._opt_steps=opt_steps
 
   def update_replay_buffer(
+    self,
     replay_buffer,
     episode_experience,
     her_type=HERType.NO_HINDSIGHT,
@@ -257,7 +258,7 @@ class EnvironmentLoopHer(core.Worker):
       transition = (old_state,action,episode_return,timestep.observation,self._environment.goal)
       np.append(episode_experience,transition)
 
-    update_replay_buffer(
+    self.update_replay_buffer(
         self._replay_buffer,
         episode_experience,
         her_type=HERType.FINAL,
