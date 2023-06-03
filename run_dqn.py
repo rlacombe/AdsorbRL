@@ -10,6 +10,7 @@ import sonnet as snt
 import tensorflow as tf
 
 from env import CatEnv
+from her_experiment_loop import EnvironmentLoopHer
 
 
 def main(_):
@@ -32,7 +33,7 @@ def main(_):
     learning_rate=1e-4,
   )
 
-  loop = acme.EnvironmentLoop(environment, agent)
+  loop = EnvironmentLoopHer(environment, agent)
   loop.run(num_episodes=20000)  # pytype: disable=attribute-error
 
 
@@ -48,7 +49,7 @@ def main(_):
   print('Starting with Mn; should see higher weight on Pd and Pt (indices 32 & 33):')
   print(q_vals)
 
-  
+
 
 if __name__ == '__main__':
   app.run(main)

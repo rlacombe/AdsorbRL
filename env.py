@@ -25,8 +25,8 @@ class CatEnv(dm_env.Environment):
     for _, _, reward, state in transitions_raw:
       # Numpy arrays aren't hashable, so convert to tuples.
       # Maximize rewards, but want min energy --> flip sign.
-      if self.max==None || self.max>=float(-reward):
-          self.max=float(-reward):
+      if self.max==None or self.max>=float(-reward):
+          self.max=float(-reward)
           self.goal = tuple(np.array(state, dtype=np.float32))
       self.states[tuple(np.array(state, dtype=np.float32))] = float(-reward)
 

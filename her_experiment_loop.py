@@ -31,7 +31,7 @@ import tree
 import utils
 from utils import HERType
 
-class EnvironmentLoop(core.Worker):
+class EnvironmentLoopHer(core.Worker):
   """A simple RL environment loop.
 
   This takes `Environment` and `Actor` instances and coordinates their
