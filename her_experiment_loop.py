@@ -246,7 +246,7 @@ class EnvironmentLoopHer(core.Worker):
       episode_return = tree.map_structure(operator.iadd,
                                           episode_return,
                                           timestep.reward)
-      transition = (old_state,action,episode_return,timestep.observation,self._environment.goal)
+      transition = (old_state,action,episode_return,timestep.observation,self._environment.goal,timestep.step_type)
       print("Append0",episode_experience,transition)
       episode_experience.append(transition)
       time_steps.append(timestep)
