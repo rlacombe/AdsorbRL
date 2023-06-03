@@ -248,8 +248,8 @@ class EnvironmentLoopHer(core.Worker):
                                           timestep.reward)
       transition = (old_state,action,episode_return,timestep.observation,self._environment.goal)
       print("Append0",episode_experience,transition)
-      np.append(episode_experience,transition)
-      np.append(time_steps,timestep)
+      episode_experience.append(transition)
+      time_steps.append(timestep)
       print("Append1",episode_experience,transition)
       self.update_replay_buffer(
         self._replay_buffer,
