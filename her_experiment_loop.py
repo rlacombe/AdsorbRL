@@ -326,4 +326,4 @@ class EnvironmentLoopHer(core.Worker):
 
 
   def _generate_zeros_from_spec(spec: specs.Array) -> np.ndarray:
-  return np.zeros(spec.shape, spec.dtype)
+    return np.zeros(spec.shape, spec.dtype)
