@@ -207,7 +207,7 @@ class EnvironmentLoopHer(core.Worker):
     # For evaluation, this keeps track of the total undiscounted reward
     # accumulated during the episode.
     episode_return = tree.map_structure(self._generate_zeros_from_spec,
-                                        self._environment.reward_spec())
+                                        self._environment.reward_spec()
     env_reset_start = time.time()
     timestep = self._environment.reset()
     env_reset_duration = time.time() - env_reset_start
@@ -254,8 +254,9 @@ class EnvironmentLoopHer(core.Worker):
       episode_return = tree.map_structure(operator.iadd,
                                           episode_return,
                                           timestep.reward)
-      transition = (old_state.observation,action,episode_return,timestep.observation,self._environment.goal)
+      transition = (old_state,action,episode_return,timestep.observation,self._environment.goal)
       np.append(episode_experience,transition)
+
     update_replay_buffer(
         self._replay_buffer,
         episode_experience,
@@ -345,5 +346,5 @@ class EnvironmentLoopHer(core.Worker):
     return step_count
 
 
-  def _generate_zeros_from_spec(spec: specs.Array) -> np.ndarray:
+  def _generate_zeros_from_spec(self, spec: specs.Array) -> np.ndarray:
     return np.zeros(spec.shape, spec.dtype)
