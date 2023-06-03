@@ -40,6 +40,7 @@ class Buffer:
         Returns:
           (tuple): batch of experience (state, action, reward, next_state)
         """
+        print("Samaple",self._buffer)
         samples = self._buffer
         if len(self._buffer) >= self._sample_size:
             samples = random.sample(self._buffer, self._sample_size)

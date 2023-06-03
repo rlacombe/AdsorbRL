@@ -138,6 +138,7 @@ class EnvironmentLoopHer(core.Worker):
 
         if her_type == HERType.FINAL:
             # relabel episode based on final state in episode
+            print("here")
             final_goal = episode_experience[-1][3]
             new_reward = env_reward_function(next_state, final_goal)
             replay_buffer.add(np.append(state, final_goal),
