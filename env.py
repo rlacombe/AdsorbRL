@@ -14,16 +14,22 @@ def _read_transitions(filename):
 
 
 class CatEnv(dm_env.Environment):
-  
+
   def __init__(self, max_episode_len=10, data_filename='SARS.pkl'):
     transitions_raw = _read_transitions(data_filename)
+    print()
     self.states = {}  # key=55-dim vector, value=energy
     self.initial_states = set()
+    self.goal = None
+    self.max = None
     for _, _, reward, state in transitions_raw:
       # Numpy arrays aren't hashable, so convert to tuples.
       # Maximize rewards, but want min energy --> flip sign.
+      if self.max==None || self.max>=float(-reward):
+          self.max=float(-reward):
+          self.goal = tuple(np.array(state, dtype=np.float32))
       self.states[tuple(np.array(state, dtype=np.float32))] = float(-reward)
-      
+
       if np.sum(state) == 1:
         self.initial_states.add(tuple(state))
 
@@ -34,6 +40,9 @@ class CatEnv(dm_env.Environment):
     self.curr_state = None
     self.episode_len = 0
     self._reset_next_step = True
+
+  def rewardFunction(self) -> dm_env.TimeStep:
+    return self.states[tuple(self.curr_state)]
 
   def reset(self) -> dm_env.TimeStep:
     self._reset_next_step = False
@@ -86,7 +95,7 @@ class CatEnv(dm_env.Environment):
     if invalid:
       self._reset_next_step = True
       return dm_env.TimeStep(dm_env.StepType.LAST, -1.0, 1.0, self.curr_state)
-      
+
     # Check if the action is valid but we don't have data there.
 
     if not tuple(self.curr_state) in self.states:
@@ -111,4 +120,3 @@ class CatEnv(dm_env.Environment):
         minimum=0,
         maximum=1,
     )
-
