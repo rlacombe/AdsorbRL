@@ -81,7 +81,7 @@ class EnvironmentLoopHer(core.Worker):
     self._num_relabeled = num_relabeled
     self._opt_steps=opt_steps
 
-def update_replay_buffer(
+  def update_replay_buffer(
     replay_buffer,
     episode_experience,
     her_type=HERType.NO_HINDSIGHT,
@@ -325,5 +325,5 @@ def update_replay_buffer(
     return step_count
 
 
-def _generate_zeros_from_spec(spec: specs.Array) -> np.ndarray:
+  def _generate_zeros_from_spec(spec: specs.Array) -> np.ndarray:
   return np.zeros(spec.shape, spec.dtype)
