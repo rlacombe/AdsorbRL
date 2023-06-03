@@ -22,7 +22,7 @@ class Buffer:
         self._sample_size = sample_size
         self._buffer = collections.deque(maxlen=self._size)
 
-    def add(self, state, action, reward, next_state):
+    def add(self, state, action, reward, next_state, step_type):
         """Add an experience tuple to the buffer.
 
         Args:
@@ -31,7 +31,7 @@ class Buffer:
           reward (ndarray): reward obtained from the env
           next_state (ndarray): numpy array corresponding to the next state
         """
-        self._buffer.append((state, action, reward, next_state))
+        self._buffer.append((state, action, reward, next_state, step_type))
 
     def sample(self):
         """
@@ -50,5 +50,6 @@ class Buffer:
         reward = np.array([arr[2] for arr in samples])
         next_state = np.array(
             [arr[3] for arr in samples]).reshape(len(samples), -1)
+        step_type  = np.array([arr[4] for arr in samples])
 
-        return state, action, reward, next_state
+        return state, action, reward, next_state, step_type

@@ -126,12 +126,13 @@ class EnvironmentLoopHer(core.Worker):
     for timestep in range(len(episode_experience)):
 
         # copy experience from episode_experience to replay_buffer
-        state, action, reward, next_state, goal = episode_experience[timestep]
+        state, action, reward, next_state, goal, step_type = episode_experience[timestep]
         # use replay_buffer.add
         replay_buffer.add(np.append(state, goal),
                           action,
                           reward,
-                          np.append(next_state, goal))
+                          np.append(next_state, goal),
+                          step_type)
 
         # ======================== TODO modify code ========================
 
@@ -142,7 +143,8 @@ class EnvironmentLoopHer(core.Worker):
             replay_buffer.add(np.append(state, final_goal),
                               action,
                               new_reward,
-                              np.append(next_state, final_goal))
+                              np.append(next_state, final_goal),
+                              step_type)
             # get final goal
 
             # compute new reward
@@ -160,7 +162,8 @@ class EnvironmentLoopHer(core.Worker):
                 replay_buffer.add(np.append(state, future_goal),
                                   action,
                                   new_reward,
-                                  np.append(next_state, future_goal))
+                                  np.append(next_state, future_goal),
+                                  step_type)
             # for every transition, add num_relabeled transitions to the buffer
 
             # get random future goal
@@ -178,7 +181,8 @@ class EnvironmentLoopHer(core.Worker):
                 replay_buffer.add(np.append(state, random_goal),
                                   action,
                                   new_reward,
-                                  np.append(next_state, random_goal))
+                                  np.append(next_state, random_goal),
+                                  step_type)
             # for every transition, add num_relabeled transitions to the buffer
 
             # get random goal
@@ -222,6 +226,7 @@ class EnvironmentLoopHer(core.Worker):
     # (state, action, reward, next_state, goal_state)
     episode_experience = []
     # Run an episode.
+    time_steps = []
     while not timestep.last():
       # Book-keeping.
       episode_steps += 1
@@ -236,27 +241,12 @@ class EnvironmentLoopHer(core.Worker):
       timestep = self._environment.step(action)
       env_step_durations.append(time.time() - env_step_start)
 
-      # Have the agent and observers observe the timestep.
-      self._actor.observe(action, next_timestep=timestep)
-      for observer in self._observers:
-        # One environment step was completed. Observe the current state of the
-        # environment, the current timestep and the action.
-        observer.observe(self._environment, timestep, action)
-
-      # Give the actor the opportunity to update itself.
-      if self._should_update:
-        self._actor.update()
-
-      # Equivalent to: episode_return += timestep.reward
-      # We capture the return value because if timestep.reward is a JAX
-      # DeviceArray, episode_return will not be mutated in-place. (In all other
-      # cases, the returned episode_return will be the same object as the
-      # argument episode_return.)
       episode_return = tree.map_structure(operator.iadd,
                                           episode_return,
                                           timestep.reward)
       transition = (old_state,action,episode_return,timestep.observation,self._environment.goal)
       np.append(episode_experience,transition)
+      np.append(time_steps,timestep)
 
     self.update_replay_buffer(
         self._replay_buffer,
@@ -267,20 +257,22 @@ class EnvironmentLoopHer(core.Worker):
     )
     # Record counts.
     counts = self._counter.increment(episodes=1, steps=episode_steps)
-    for _ in range(self._opt_steps):
-      self._actor.observe(action, next_timestep=timestep)
+    for _ in range(episode_steps):
+      state, action, reward, next_state, step_type_new = replay_buffer.sample()
+      hind_timestep = dm_env.TimeStep(step_type_new, reward, 1.0, state)
+      self._actor.observe(action, next_timestep=hind_timestep)
       for observer in self._observers:
         # One environment step was completed. Observe the current state of the
         # environment, the current timestep and the action.
-        observer.observe(self._environment, timestep, action)
+        observer.observe(self._environment, hind_timestep, action)
 
       # Give the actor the opportunity to update itself.
       if self._should_update:
         self._actor.update()
-        episode_return = tree.map_structure(operator.iadd,
-                                      episode_return,
-                                      timestep.reward)
-        transition = (old_state.observation,action,episode_return,timestep.observation,self._environment.goal)
+        # episode_return = tree.map_structure(operator.iadd,
+        #                               episode_return,
+        #                               timestep.reward)
+        # transition = (old_state.observation,action,episode_return,timestep.observation,self._environment.goal)
     # Collect the results and combine with counts.
     steps_per_second = episode_steps / (time.time() - episode_start_time)
     result = {
