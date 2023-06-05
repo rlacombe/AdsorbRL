@@ -22,6 +22,8 @@ def main(_):
   ])
 
   agent = dqn.DQN(
+    discount=0.99,
+    eval_epsilon=0.,
     environment_spec=environment_spec,
     network=network,
     target_update_period=50,
@@ -29,8 +31,15 @@ def main(_):
     n_step=1,
     checkpoint=False,
     epsilon=0.1,
-    learning_rate=1e-4,
+    learning_rate=5e-5,
+    target_update_period=2000,
+    min_replay_size=20_000,
+    max_replay_size=1_000_000,
+    samples_per_insert=8,
+    batch_size=32
   )
+
+
 
   loop = acme.EnvironmentLoop(environment, agent)
   loop.run(num_episodes=20000)  # pytype: disable=attribute-error
@@ -48,7 +57,7 @@ def main(_):
   print('Starting with Mn; should see higher weight on Pd and Pt (indices 32 & 33):')
   print(q_vals)
 
-  
+
 
 if __name__ == '__main__':
   app.run(main)
