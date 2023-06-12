@@ -1,7 +1,7 @@
 # AdsorbRL: Deep Reinforcement Learning for Inverse Catalyst Design
 
-In this project, we focus on inverse catalyst design, an inverse design problem where we seek to identify high-performance catalysts for heterogeneous thermal or electro-chemical catalysis with applications for climate solutions. 
-   
+In this project, we focus on inverse catalyst design, an inverse design problem where we seek to identify high-performance catalysts for heterogeneous thermal or electro-chemical catalysis with applications for climate solutions.
+
 Specifically, **we use Deep Reinforcement Learning (DRL) to train an agent to navigate the vast space of possible materials and adsorbates, and identify catalyst candidates of interest**. A key descriptor of catalytic activity is the energy with which the reagent species binds to surface of the catalyst. We  use offline RL on the [Materials Project]() and [Open Catalyst 2020]() datasets of adsorption energies to train an RL agent to identify catalysts which bind the strongest (lowest adsorption energy) with select target adsorbates of importance for the clean energy transition.
 
 We specifically worked with a DQN network powered by the Deepmind [Acme framework]() under [TensorFlow]().
@@ -28,16 +28,17 @@ Our datasets are available for download under the `data/` directory.
   pip install dm-acme[envs]
   pip install protobuf==3.20.3
   ```
-  
+
   4. Add the data to the code repository
   5. Choose your appropriate Branch.
       A. Main for main DQN experiments
-      B. Periodic for Constrained State/Actions Space: Periodic Table of Elements
       C. HER/PER experiments for WIP HER/PER Research
   6.  Run with proper py file for experiment
       A. python run_dqn.py for baseinline
       B. python run_multi_objective.py for multi objective experimenbts
       C. python run_sas_dqn.py
+      D. python run_periodic_dqn.py
+      E. python run_periodic_q.py
 
 ### Project Structure
 
@@ -94,4 +95,4 @@ We explore catalysts associated with the following 6 adsorbates, which are of ma
 
 For each adsorbate, the Materials Project Catalysis Explorer provides a set of properties including the formula, bulk formula, adsorption energy, and miller indices (which describe a particular lattice structure for the material). For our select adsorbates there are between 5,000 and 10,000 different catalysts each.
 
-We then filter these for the set of unique up to 3-element catalysts by selecting the lowest adsorption energy catalysts among candidate bulk formulae and miller indices. This reduces our set to between 2,000–3,000 catalysts per adsorbate, for a total of approximately 8,000 total unique catalysts in our full dataset for the 6 adsorbates of interest. We find a set of 55 elements comprising these catalysts and represent our state as the one-hot vector of length 55 where the presence of an element in the catalyst is indicated by a ’1’ in the corresponding dimension. 
+We then filter these for the set of unique up to 3-element catalysts by selecting the lowest adsorption energy catalysts among candidate bulk formulae and miller indices. This reduces our set to between 2,000–3,000 catalysts per adsorbate, for a total of approximately 8,000 total unique catalysts in our full dataset for the 6 adsorbates of interest. We find a set of 55 elements comprising these catalysts and represent our state as the one-hot vector of length 55 where the presence of an element in the catalyst is indicated by a ’1’ in the corresponding dimension.
