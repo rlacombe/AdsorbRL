@@ -56,8 +56,8 @@ def load_graph(dataset, elements_list):
         
         # Retrieve allowed transition
         s, _, r, s_prime = transition
-        if sum(s) == 3: continue
-        if sum(s_prime) == 3: continue
+        if sum(s) > 3: continue
+        if sum(s_prime) > 3: continue
 
         # Transform into strings for node representation
         s, s_prime = onehot_to_str(s, elements_list), onehot_to_str(s_prime, elements_list)
@@ -81,7 +81,8 @@ def load_graph(dataset, elements_list):
 
 def load_binary_graph(dataset, elements_list):
     """
-    Creates a NetworkX directed graph representing state transitions from the given dataset.
+    Creates a NetworkX directed graph representing transitions from the given dataset, only for
+    single elements and binary mixtures (excludes ternary mixtures).
 
     Args:
         dataset (list): A list of transitions, where each transition is a tuple containing the
@@ -123,6 +124,51 @@ def load_binary_graph(dataset, elements_list):
     progress_bar.close()
     return G
 
+
+def load_unary_graph(dataset, elements_list):
+    """
+    Creates a NetworkX directed graph representing transitions from the given dataset, only for
+    single elements (excludes binary and ternary mixtures).
+
+    Args:
+        dataset (list): A list of transitions, where each transition is a tuple containing the
+                        current state, action, reward, and next state.
+        elements_list (list): A list of element symbols corresponding to the one-hot encoded
+                              representation of the states in the dataset.
+
+    Returns:
+        nx.DiGraph: A NetworkX directed graph representing the state transitions.
+    """
+
+    G = nx.Graph()
+    progress_bar = tqdm(total=len(dataset), desc="Creating graph")
+    
+    for transition in dataset:
+        
+        # Retrieve allowed transition excluding ternary mixtures
+        s, _, r, s_prime = transition
+        if sum(s) > 1.0: continue 
+        if sum(s_prime) > 1.0: continue
+
+        # Transform into strings for node representation
+        s, s_prime = onehot_to_str(s, elements_list), onehot_to_str(s_prime, elements_list)
+
+        # Add the source state s as a node in the graph if it doesn't exist yet
+        if s not in G:
+            G.add_node(s)
+    
+        # Add the target state s' as a node in the graph if it doesn't exist yet
+        if s_prime not in G:
+            G.add_node(s_prime)
+    
+        # Add an edge from s to s' with the action a and reward r
+        G.add_edge(s, s_prime, reward=r)
+
+        # Update progress bar
+        progress_bar.update(1)
+
+    progress_bar.close()
+    return G
 
 def draw_graph(G):
     print("Computing graph layout...\n")
@@ -208,6 +254,13 @@ elements_list = [
 
 print("Loading pickle file...\n")
 SARS = load_transitions('SARS.pkl')
+
+#G = load_unary_graph(SARS, elements_list)
+           
+#for n in G.nodes:
+#        edges_from_node = [edge for edge in G.edges() if n in edge] 
+#        v, u = edges_from_node[-1]
+#        print(f"{v}: {G.edges[v, u]['reward']}") 
 
 print("Creating graph...\n")
 G = load_graph(SARS, elements_list)
