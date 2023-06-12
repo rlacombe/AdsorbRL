@@ -12,7 +12,7 @@ import tensorflow as tf
 import datetime
 
 from periodic_env import PeriodicTableEnv
-from agents import LinearExplorationSchedule, DQNExplorer, EpsilonGreedyEnvironmentLoop, QLearningAgent
+from explore import QLearningAgent
 
 def perform_rollouts(environment, agent, num_rollouts):
     total_E = 0.0
