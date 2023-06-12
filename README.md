@@ -1,4 +1,4 @@
-# CS224 AdsorbRL: Deep Reinforcement Learning for Inverse Catalyst Design
+# AdsorbRL: Deep Reinforcement Learning for Inverse Catalyst Design
 
 In this project, we focus on inverse catalyst design, an inverse design problem where we seek to identify high-performance catalysts for heterogeneous thermal or electro-chemical catalysis with applications for climate solutions. 
    
@@ -16,7 +16,8 @@ Our datasets are available for download under the `data/` directory.
   1.  To get your model running, first setup a compatible server.  We utilized AWS C4.4xlarge ec2 instances with the Deep Learning AMI GPU Pytorch 1.13.1 (Ubuntu 20.04)
   2.  Down load this repository via git
   3.  Run the following scripts
-  ``
+
+  ```
   sudo apt-get install python3.8-venv
   python3.8 -m venv env
   source env/bin/activate
@@ -26,7 +27,8 @@ Our datasets are available for download under the `data/` directory.
   pip install dm-acme[jax,tf]
   pip install dm-acme[envs]
   pip install protobuf==3.20.3
-  ``
+  ```
+  
   4. Add the data to the code repository
   5. Choose your appropriate Branch.
       A. Main for main DQN experiments
@@ -61,7 +63,7 @@ Utils:
 ├─ data/ -> data directory
 │    └─ graph.py -> graph data analysis and visualization
 │    └─ get_materials_project_data.ipynb -> notebook for data retrieval
-│    │
+│    └─ starOH2/ -> dataset for *OH2 adsorbate
 │    └─ starCH2/ -> dataset for *CH2 adsorbate
 │    └─ starCH4/ -> dataset for *CH4 adsorbate
 │    └─ starH/ -> dataset for *H adsorbate
