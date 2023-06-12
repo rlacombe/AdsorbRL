@@ -45,6 +45,7 @@ Our datasets are available for download under the `data/` directory.
 ```
 Scripts:
 \ run_dqn.py -> baseline: train and run a DQN in env.py baseline environment
+\ run_dqn_offlineReward.py: train and run a DQN with offline data and reward shaping for 'invalid' states 
 \ run_sas_dqn.py -> train and run a DQN in our sas_env.py state-actions environment
 \ run_periodic_q.py -> train and run a Q-learning model on the periodic table environment
 \ run_periodic_dqn.py -> train and run a DQN model on the periodic table environment
@@ -52,6 +53,7 @@ Scripts:
 
 Environments:
 \ env.py -> baseline env: baseline Environment
+\ env_offlineReward.py: offline Environment with reward shaping
 \ periodic_env.py periodic env: periodic table Environment
 \ sas_env.py -> sas env: next_states Environment
 \ multi_objective_env.py -> multi-objective Environment
@@ -63,7 +65,8 @@ Utils:
 │
 ├─ data/ -> data directory
 │    └─ graph.py -> graph data analysis and visualization
-│    └─ get_materials_project_data.ipynb -> notebook for data retrieval
+│    └─ get_unique_elements.ipynb -> decompose bulk formula into their component elements
+│    └─ get_materials_project_data.ipynb -> notebook for data retrieval and creation of (s, a, r, s') tuples
 │    └─ starOH2/ -> dataset for *OH2 adsorbate
 │    └─ starCH2/ -> dataset for *CH2 adsorbate
 │    └─ starCH4/ -> dataset for *CH4 adsorbate
@@ -95,4 +98,4 @@ We explore catalysts associated with the following 6 adsorbates, which are of ma
 
 For each adsorbate, the Materials Project Catalysis Explorer provides a set of properties including the formula, bulk formula, adsorption energy, and miller indices (which describe a particular lattice structure for the material). For our select adsorbates there are between 5,000 and 10,000 different catalysts each.
 
-We then filter these for the set of unique up to 3-element catalysts by selecting the lowest adsorption energy catalysts among candidate bulk formulae and miller indices. This reduces our set to between 2,000–3,000 catalysts per adsorbate, for a total of approximately 8,000 total unique catalysts in our full dataset for the 6 adsorbates of interest. We find a set of 55 elements comprising these catalysts and represent our state as the one-hot vector of length 55 where the presence of an element in the catalyst is indicated by a ’1’ in the corresponding dimension.
+We then filter these for the set of unique up to 3-element catalysts by selecting the lowest adsorption energy catalysts among candidate bulk formulae and miller indices. This reduces our set to between 2,000–3,000 catalysts per adsorbate, for a total of 7,386 total unique catalysts in our full dataset for the 6 adsorbates of interest. We find a set of 55 elements comprising these catalysts and represent our state as the one-hot vector of length 55 where the presence of an element in the catalyst is indicated by a ’1’ in the corresponding dimension.
