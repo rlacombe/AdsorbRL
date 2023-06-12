@@ -2,7 +2,7 @@ from collections import defaultdict
 import dm_env
 from dm_env import specs
 import numpy as np
-from data.periodic_table import PeriodicTable
+from periodic.periodic_table import PeriodicTable
 
 class PeriodicTableEnv(dm_env.Environment):
   

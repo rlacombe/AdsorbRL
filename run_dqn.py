@@ -11,7 +11,7 @@ import sonnet as snt
 import tensorflow as tf
 import datetime
 
-from periodic_env import PeriodicTableEnv
+from env import CatEnv
 from explore import LinearExplorationSchedule, DQNExplorer, EpsilonGreedyEnvironmentLoop
 
 def perform_rollouts(environment, agent, num_rollouts):
@@ -35,7 +35,7 @@ def perform_rollouts(environment, agent, num_rollouts):
 def main(_):
   
   # Define environment
-  environment = wrappers.SinglePrecisionWrapper(PeriodicTableEnv())
+  environment = wrappers.SinglePrecisionWrapper(CatEnv())
   environment_spec = specs.make_environment_spec(environment)
 
   # Define Q-network
