@@ -210,3 +210,69 @@ class EpsilonGreedyEnvironmentLoop(core.Worker):
 
 def _generate_zeros_from_spec(spec: specs.Array) -> np.ndarray:
   return np.zeros(spec.shape, spec.dtype)
+
+
+
+
+
+class QLearningAgent(acme.Actor):
+    
+    def __init__(self, env_specs=None, step_size=0.1, epsilon=0.1):
+        
+        # Black Jack dimensions
+        self.Q = np.zeros((86,5))
+        
+        # set step size
+        self.step_size = step_size
+        
+        # set behavior policy
+        # self.policy = None
+        self.behavior_policy = lambda q_values: self.epsilon_greedy(q_values, epsilon=0.1)
+        
+        # store timestep, action, next_timestep
+        self.timestep = None
+        self.action = None
+        self.next_timestep = None
+
+    def epsilon_greedy(self, q_values, epsilon=0.1):
+      if np.random.rand() < epsilon:
+            return np.random.randint(len(q_values), dtype=np.int32)  # Choose a random action
+      else:
+            return np.argmax(q_values)  # Choose the action with the highest Q-value
+
+    #def state_to_index(self, state):
+        #state = *map(int, state),
+        #return state
+    
+    def transform_state(self, state):
+        # this is specifally required for the blackjack environment
+        state = int(np.argmax(state))
+        return state
+    
+    def select_action(self, observation):
+        state = self.transform_state(observation)
+        return self.behavior_policy(self.Q[state])
+
+    def observe_first(self, timestep):
+        self.timestep = timestep
+
+    def observe(self, action, next_timestep):
+        self.action = action
+        self.next_timestep = next_timestep  
+
+    def update(self):
+        # get variables for convenience
+        state = self.timestep.observation
+        _, reward, discount, next_state = self.next_timestep
+        action = self.action
+        
+        # turn states into indices
+        state = self.transform_state(state)
+        next_state = self.transform_state(next_state)
+        
+        # Q-value update
+        td_error = reward + discount * np.max(self.Q[next_state]) - self.Q[state][action]        
+        self.Q[state][action] += self.step_size * td_error
+        
+        # finally, set timestep to next_timestep
+        self.timestep = self.next_timestep    
