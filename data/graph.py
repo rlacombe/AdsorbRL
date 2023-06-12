@@ -56,8 +56,8 @@ def load_graph(dataset, elements_list):
         
         # Retrieve allowed transition
         s, _, r, s_prime = transition
-        if sum(s) == 3: continue
-        if sum(s_prime) == 3: continue
+        if sum(s) > 3: continue
+        if sum(s_prime) > 3: continue
 
         # Transform into strings for node representation
         s, s_prime = onehot_to_str(s, elements_list), onehot_to_str(s_prime, elements_list)
