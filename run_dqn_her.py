@@ -9,7 +9,9 @@ from acme.utils.loggers import tf_summary
 import numpy as np
 import sonnet as snt
 import tensorflow as tf
+from her_experiment_loop import EnvironmentLoopHer
 import datetime
+from acme.utils.loggers import tf_summary
 
 from env import CatEnv
 from explore import LinearExplorationSchedule, DQNExplorer, EpsilonGreedyEnvironmentLoop
@@ -65,13 +67,16 @@ def main(_):
   log_directory = f"logs/{current_time}"
   logger = tf_summary.TFSummaryLogger(logdir = log_directory, label = 'DQN')
   
+
+
   # Define main loop
-  loop = EpsilonGreedyEnvironmentLoop(environment, explorer, logger=logger)
+  loop = EnvironmentLoopHer(environment, explorer, logger=logger)
   total_episodes = 10000
   eval_every = 500
 
-  # Run main lop
+  # Run main loop
   for steps in range(int(total_episodes / eval_every)):
+
     loop.run(num_episodes=eval_every)  # Train in environment
     
     # Roll out policies and evaluate last state average energy
