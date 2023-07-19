@@ -11,6 +11,7 @@ from acme.utils import counting
 from acme.utils import loggers
 from acme.utils import observers as observers_lib
 from acme.utils import signals
+import acme
 
 import dm_env
 from dm_env import specs

@@ -47,7 +47,7 @@ def main(_):
   # Define agent and epsilon-greedy exploration schedule
   agent = dqn.DQN(
     environment_spec=environment_spec,
-    network=network,
+    network=q_network,
     target_update_period=2000,
     samples_per_insert=8.,
     n_step=1,
