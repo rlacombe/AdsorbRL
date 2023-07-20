@@ -1,3 +1,5 @@
+import enum
+
 class HERType(enum.Enum):
     NO_HINDSIGHT = 0
     FINAL = 1
